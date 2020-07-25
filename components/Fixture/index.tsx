@@ -1,10 +1,12 @@
 import React from 'react';
-import { Container, InfoWrapper } from './styles';
+import { Container, InfoWrapper, TeamLogo } from './styles';
 
 interface FixtureTeam {
     team: {
         name: string;
         id: string;
+        displayName: string;
+        logo?: string;
     };
     score: number;
 }
@@ -42,13 +44,19 @@ const formatHours = (date: Date) => {
 };
 
 export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate }: FixtureProps) => {
-    const estimatedEndTime = new Date(matchDate.getTime());
+    const matchDateObj = new Date(matchDate);
+    const estimatedEndTime = new Date(matchDateObj.getTime());
+    // const estimatedEndTime = new Date(matchDate.getTime());
     estimatedEndTime.setHours(estimatedEndTime.getHours() + 2);
     estimatedEndTime.setMinutes(estimatedEndTime.getMinutes() + 30);
 
+    const homeLogo = homeTeam.team.logo || '/teamLogo.webp';
+    const awayLogo = homeTeam.team.logo || '/teamLogo.webp';
+
     return (
         <Container>
-            <span>{homeTeam.team.name}</span>
+            <span>{homeTeam.team.displayName || homeTeam.team.name}</span>
+            <TeamLogo src={homeLogo} />
             <InfoWrapper>
                 { new Date() > estimatedEndTime && (
                     <b>{homeTeam.score} - {awayTeam.score}</b>
@@ -56,12 +64,13 @@ export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate 
 
                 { new Date() <= estimatedEndTime && (
                     <>
-                        <span>{formatDate(matchDate)}</span>
-                        <b>{formatHours(matchDate)}</b>
+                        <span>{formatDate(matchDateObj)}</span>
+                        <b>{formatHours(matchDateObj)}</b>
                     </>
                 )}
             </InfoWrapper>
-            <span>{awayTeam.team.name}</span>
+            <TeamLogo src={awayLogo} />
+            <span>{awayTeam.team.displayName || awayTeam.team.name}</span>
         </Container>
     );
 };

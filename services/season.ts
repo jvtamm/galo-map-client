@@ -6,22 +6,40 @@ export interface Season {
     label?: string;
 }
 
+// interface SeasonSummary {
+//     seasons: Season[];
+//     current?: Season
+// }
+
+export interface SeasonRange {
+    current: Season;
+    previous?: Season;
+    next?: Season;
+}
+
 interface ISeasonService {
-    list(): Promise<Season[]>
+    getByYear(year: number, range?: number): Promise<SeasonRange>
 }
 
 export class SeasonService implements ISeasonService {
     private readonly _endpoint = 'season';
 
-    async list(): Promise<Season[]> {
-        try {
-            const response = await api.get(this._endpoint);
-            const { data } = response;
+    async getByYear(year: number, range?: number): Promise<SeasonRange> {
+        let endpoint = `${this._endpoint}?year=${year}`;
+        if (range) endpoint += `&range=${range}`;
 
-            return data.map((season) => season as Season);
+        try {
+            const { data } = await api.get(endpoint);
+            const { season, next, previous } = data;
+
+            return {
+                current: season as Season,
+                ...previous && { previous: previous as Season },
+                ...next && { next: next as Season }
+            };
         } catch (e) {
             console.log(e);
-            return [] as Season[];
+            return { current: null };
         }
     }
 }

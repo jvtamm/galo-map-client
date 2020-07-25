@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import {
     ButtonWrapper,
@@ -10,14 +10,14 @@ import {
     FilterSection
 } from './styles';
 import { Button } from '@components/Button';
-import { FilterContext } from '@contexts/filter';
+import { useFilters } from '@contexts/filter';
 
 interface FilterItem {
     label: string;
     key: string;
 }
 
-interface FilterSection {
+export interface FilterSection {
     [key: string]: FilterItem[];
 }
 
@@ -28,7 +28,7 @@ interface FilterProps {
 export const Filter: React.FC<FilterProps> = ({ sections }: FilterProps) => {
     const [open, setOpen] = useState(false);
     const [selectedFilters, setSelectedFilters] = useState([]);
-    const { applyFilters } = useContext(FilterContext);
+    const { filters, includes, applyFilters } = useFilters();
 
     function closeDropdown(ref) {
         useEffect(() => {
@@ -64,6 +64,12 @@ export const Filter: React.FC<FilterProps> = ({ sections }: FilterProps) => {
             setSelectedFilters(updatedFilters);
         }
     }
+
+    useEffect(() => {
+        const updatedSelectedFilters = selectedFilters.filter(({ key }) => includes(key));
+
+        setSelectedFilters(updatedSelectedFilters);
+    }, [filters]);
 
     return (
         <Container>

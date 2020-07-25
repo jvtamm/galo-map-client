@@ -7,6 +7,12 @@ export default createGlobalStyle`
         box-sizing: border-box;
     }
 
+    .leaflet-container {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
+
     html, body, #root {
         max-height: 100vh;
         max-width: 100vw;

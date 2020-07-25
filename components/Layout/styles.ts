@@ -17,7 +17,7 @@ export const Container = styled.div`
 export const Menu = styled.div`
     flex: 1;
 
-    max-width: 100px;
+    max-width: 80px;
 `;
 
 export const Main = styled.main`
