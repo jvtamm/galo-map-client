@@ -126,23 +126,16 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
 };
 
 export async function getServerSideProps(context) {
-    const year = context.query.year || (new Date()).getFullYear();
+    const { year: queryYear, id } = context.query;
+    const year = queryYear || (new Date()).getFullYear();
 
     const seasonService = new SeasonService();
     const { current, next, previous } = await seasonService.getByYear(year);
 
     const { data } = await api.get(`/fixture?year=${current.year}`);
-    const nextFixtureDate = new Date().setHours(0, 0, 0);
 
-    let nextFixture;
     const filters = {};
     data.fixtures.forEach((fixture) => {
-        const matchDate = new Date(fixture.matchDate).getTime();
-
-        if (!nextFixture && matchDate > nextFixtureDate) {
-            nextFixture = fixture;
-        }
-
         const { id, name } = fixture.tournament;
 
         filters[id] = {
@@ -150,6 +143,8 @@ export async function getServerSideProps(context) {
             label: name
         };
     });
+
+    const fixtureResponse = await api.get(`fixture/${id}`);
 
     const props = {
         season: {
@@ -161,7 +156,7 @@ export async function getServerSideProps(context) {
         filters: {
             Campeonatos: Object.values(filters)
         },
-        matchFacts: nextFixture || data.fixtures[0]
+        matchFacts: fixtureResponse.data
     };
 
     return { props };

@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+// import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React from 'react';
 
 import {
     LayersControl,
@@ -11,38 +12,44 @@ import { MapContainer } from './styles';
 
 const { BaseLayer, Overlay } = LayersControl;
 
-const Map: React.FC = () => {
-    // const layersRef = useRef(null);
-    const [showLabels, setShowLabels] = useState(false);
+interface MapProps {
+    point: Array<number>;
+    children?: React.ReactNode;
+}
 
-    const position = [-19.9083333333333, -43.9177777777778];
+const Map: React.FC<MapProps> = ({ point }: MapProps) => {
+    // const layersRef = useRef(null);
+    // const [showLabels, setShowLabels] = useState(false);
+
+    // const position = [-19.9083333333333, -43.9177777777778];
     // const bounds = [
     //     [-19.9083333333333, -43.9177777777778],
     //     [-19.92, -43.925]
     // ];
 
-    const shouldShowLables = (layerControl) => {
-        const map = layerControl && layerControl.leafletElement;
-        if (!map) return false;
+    // const shouldShowLables = (layerControl) => {
+    //     const map = layerControl && layerControl.leafletElement;
+    //     if (!map) return false;
 
-        const { _layers: layers, _layerControlInputs: layerInputs } = map;
+    //     const { _layers: layers, _layerControlInputs: layerInputs } = map;
 
-        const sateliteIndex = layers.findIndex(({ name }) => name === 'Satelite');
-        if (sateliteIndex < 0) return false;
+    //     const sateliteIndex = layers.findIndex(({ name }) => name === 'Satelite');
+    //     if (sateliteIndex < 0) return false;
 
-        return layerInputs[sateliteIndex].checked;
-    };
+    //     return layerInputs[sateliteIndex].checked;
+    // };
 
-    const layersRef = useCallback(node => {
-        if (node !== null) {
-            setShowLabels(shouldShowLables(node));
-        }
-    }, []);
+    // const layersRef = useCallback(node => {
+    //     if (node !== null) {
+    //         setShowLabels(shouldShowLables(node));
+    //     }
+    // }, []);
 
     return process.browser && (
         <MapContainer>
-            <LeafletMap center={position} zoom={17}>
-                <LayersControl position="topright" ref={layersRef}>
+            <LeafletMap center={point} zoom={17}>
+                {/* <LayersControl position="topright" ref={layersRef}> */}
+                <LayersControl position="topright">
                     <BaseLayer checked name="Satelite">
                         <TileLayer
                             attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community, ESRI'

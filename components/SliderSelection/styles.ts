@@ -23,24 +23,27 @@ export const Container = styled.div<ContainerProps>`
     }
 `;
 
-export const ButtonContainer = styled.button`
+interface AnchorWrapperProps {
+    disabled: boolean;
+}
+
+export const AnchorWrapper = styled.div<AnchorWrapperProps>`
     display: flex;
     align-items: center;
     flex-shrink: 0;
     cursor: pointer;
 
-    &:disabled > svg {
-        fill: rgba(23, 36, 38, 0.5);
-        color: rgba(23, 36, 38, 0.5);
+    & > svg {
+        fill: ${({ disabled }) => disabled ? 'rgba(23, 36, 38, 0.5)' : 'var(--primary-text)'};
+        color: ${({ disabled }) => disabled ? 'rgba(23, 36, 38, 0.5)' : 'var(--primary-text)'};
 
-        cursor: default;
+        cursor: ${({ disabled }) => disabled ? 'default' : 'pointer'};
     }
-
 
     border-radius: 50%;
 
-    &:hover:enabled {
-        background: var(--light-effect)
+    &:hover {
+        background: ${({ disabled }) => disabled ? 'transparent' : 'var(--light-effect)'};
     }
     
 `;

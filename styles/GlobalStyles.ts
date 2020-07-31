@@ -37,6 +37,10 @@ export default createGlobalStyle`
         background: var(--white);
     }
 
+    a {
+        text-decoration: none;
+    }
+
     :root {
         --primary: #000000;
         --primary-text: #172426;

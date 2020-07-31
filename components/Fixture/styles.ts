@@ -1,7 +1,11 @@
 import styled from 'styled-components';
 
-export const Container = styled.a`
-    background: var(--white);
+interface FixtureWrapperProps {
+    active: boolean;
+}
+
+export const FixtureWrapper = styled.div<FixtureWrapperProps>`
+    background: ${({ active }) => active ? 'rgb(242, 244, 247)' : 'var(--white)'};
     color: var(--primary-text);
     position: relative;
     display: grid;
@@ -10,8 +14,8 @@ export const Container = styled.a`
     -ms-flex-align: center;
     align-items: center;
     justify-items: center;
-    grid-template-columns: 1fr 25px 40px 25px 1fr;
-    /* grid-template-columns: 1fr 70px 1fr; */
+    /* grid-template-columns: 1fr 25px 40px 25px 1fr; */
+    grid-template-columns: 20px 1fr 25px 40px 25px 1fr 20px;
     grid-column-gap: 15px;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -20,29 +24,35 @@ export const Container = styled.a`
     height: 70px;
     border-bottom: 1px solid var(--light-effect);
     cursor: pointer;
+    padding: 0 8px;
+
+    &:hover {
+        background: rgb(242, 244, 247);
+    }
 
     & > span {
         font-size: 14px;
         width: 100%;
-        overflow-x: auto;
-        overflow-y: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
     }
 
-    & > span:first-child {
+    & > span:nth-child(3) {
         text-align: right;
     }
 
-    & > span:nth-child(2) {
+    /* & > span:nth-child(2) {
         text-align: left;
         grid-column: 5/5;
-    }
+    } */
 
     & > img {
         grid-row: 1/1;
     } 
 
     & > img:last-of-type {
-        grid-column: 4/5;
+        /* grid-column: 4/5; */
     }
 
     & > * {
@@ -71,4 +81,13 @@ export const InfoWrapper = styled.div`
 export const TeamLogo = styled.img`
     width: 25px;
     height: 25px;
+`;
+
+export const TournamentWrapper = styled.a`
+    z-index: 9999;
+
+    & > img {
+        height: 20px;
+        width: 20px;
+    }
 `;

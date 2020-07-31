@@ -1,6 +1,8 @@
 // import React, { useState } from 'react';
 import React from 'react';
-import { Container, ButtonContainer, ArrowLeft, ArrowRight } from './styles';
+import Link from 'next/Link';
+
+import { Container, AnchorWrapper, ArrowLeft, ArrowRight } from './styles';
 
 export interface SwiperOption<T> {
     label: string;
@@ -10,16 +12,16 @@ export interface SwiperOption<T> {
 interface SwiperProps<T> {
     color?: string;
     value: SwiperOption<T>;
-    next?: T;
-    previous?: T;
+    next?: string;
+    previous?: string;
     // initialValue?: T;
     // options: SwiperOption<T>[];
-    onChange: Function;
+    // onChange: Function;
     children?: React.ReactChildren;
 }
 
 // export const Swiper = ({ color, options, initialValue, onChange }: SwiperProps<any>) => {
-export const Swiper = ({ color, value, next, previous, onChange }: SwiperProps<any>) => {
+export const Swiper = ({ color, value, next, previous }: SwiperProps<any>) => {
     // const sortedOptions = options.sort((a, b) => a.value - b.value);
 
     // let initialIndex = sortedOptions.findIndex(({ value }) => value === initialValue);
@@ -38,26 +40,24 @@ export const Swiper = ({ color, value, next, previous, onChange }: SwiperProps<a
 
     return (
         <Container color={color}>
-            <ButtonContainer
-                disabled={!previous}
-                onClick={() => onChange(previous)}
-                // disabled={selectedIndex === 0}
-                // onClick={() => swipe(-1)}
-            >
-                <ArrowLeft />
-            </ButtonContainer>
+            <Link href={previous}>
+                <a>
+                    <AnchorWrapper disabled={!previous}>
+                        <ArrowLeft />
+                    </AnchorWrapper>
+                </a>
+            </Link>
 
             {/* <label>{sortedOptions[selectedIndex]?.label}</label> */}
             <label>{value.label}</label>
 
-            <ButtonContainer
-                disabled={!next}
-                onClick={() => onChange(next)}
-                // disabled={!sortedOptions.length || selectedIndex === sortedOptions.length - 1}
-                // onClick={() => swipe(1)}
-            >
-                <ArrowRight />
-            </ButtonContainer>
+            <Link href={next}>
+                <a>
+                    <AnchorWrapper disabled={!next}>
+                        <ArrowRight />
+                    </AnchorWrapper>
+                </a>
+            </Link>
         </Container>
     );
 };

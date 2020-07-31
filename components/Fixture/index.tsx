@@ -1,5 +1,9 @@
 import React from 'react';
-import { Container, InfoWrapper, TeamLogo } from './styles';
+import Link from 'next/Link';
+import { useRouter } from 'next/router';
+import ReactTooltip from 'react-tooltip';
+
+import { FixtureWrapper, InfoWrapper, TeamLogo, TournamentWrapper } from './styles';
 
 interface FixtureTeam {
     team: {
@@ -21,11 +25,24 @@ interface Stadium {
     coordinates: Coordinates
 }
 
+interface Redirect {
+    url: string;
+    keepParams: boolean;
+}
+
+interface Tournament {
+    id: string;
+    name: string;
+}
+
 interface FixtureProps {
     homeTeam: FixtureTeam;
     awayTeam: FixtureTeam;
     matchDate: Date;
-    ground: Stadium
+    ground: Stadium;
+    active: boolean;
+    tournament: Tournament;
+    redirect?: Redirect;
 }
 
 const formatDate = (date: Date) => {
@@ -43,34 +60,56 @@ const formatHours = (date: Date) => {
     return `${hour}:${minutes}`;
 };
 
-export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate }: FixtureProps) => {
+export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate, active, redirect, tournament }: FixtureProps) => {
     const matchDateObj = new Date(matchDate);
     const estimatedEndTime = new Date(matchDateObj.getTime());
     // const estimatedEndTime = new Date(matchDate.getTime());
     estimatedEndTime.setHours(estimatedEndTime.getHours() + 2);
     estimatedEndTime.setMinutes(estimatedEndTime.getMinutes() + 30);
 
-    const homeLogo = homeTeam.team.logo || '/teamLogo.webp';
-    const awayLogo = homeTeam.team.logo || '/teamLogo.webp';
+    const homeLogo = homeTeam.team.logo || '/teams/default.webp';
+    const awayLogo = homeTeam.team.logo || '/teams/default.webp';
+
+    const tournamentLogo = `/leagues/${tournament.id}.svg`;
+
+    const { query } = useRouter();
+    const href = {
+        pathname: redirect.url,
+        ...query.year && { query: { year: query.year } }
+    };
 
     return (
-        <Container>
-            <span>{homeTeam.team.displayName || homeTeam.team.name}</span>
-            <TeamLogo src={homeLogo} />
-            <InfoWrapper>
-                { new Date() > estimatedEndTime && (
-                    <b>{homeTeam.score} - {awayTeam.score}</b>
-                )}
+        <Link href={href}>
+            <a>
+                <FixtureWrapper active={active}>
+                    <TournamentWrapper data-tip={tournament.name}>
+                        <img src={tournamentLogo} alt={tournament.name} />
+                    </TournamentWrapper>
+                    <ReactTooltip place="top" type="dark" effect="solid"/>
 
-                { new Date() <= estimatedEndTime && (
-                    <>
-                        <span>{formatDate(matchDateObj)}</span>
-                        <b>{formatHours(matchDateObj)}</b>
-                    </>
-                )}
-            </InfoWrapper>
-            <TeamLogo src={awayLogo} />
-            <span>{awayTeam.team.displayName || awayTeam.team.name}</span>
-        </Container>
+                    <span>{homeTeam.team.displayName || homeTeam.team.name}</span>
+                    <TeamLogo src={homeLogo} />
+                    <InfoWrapper>
+                        {new Date() > estimatedEndTime && (
+                            <b>{homeTeam.score} - {awayTeam.score}</b>
+                        )}
+
+                        {new Date() <= estimatedEndTime && (
+                            <>
+                                <span>{formatDate(matchDateObj)}</span>
+                                <b>{formatHours(matchDateObj)}</b>
+                            </>
+                        )}
+                    </InfoWrapper>
+                    <TeamLogo src={awayLogo} />
+                    <span>{awayTeam.team.displayName || awayTeam.team.name}</span>
+
+                    <TournamentWrapper>
+                        {/* <img src={tournamentLogo} alt={tournament.name} /> */}
+                    </TournamentWrapper>
+
+                </FixtureWrapper>
+            </a>
+        </Link>
     );
 };
