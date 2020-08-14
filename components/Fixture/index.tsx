@@ -3,6 +3,8 @@ import Link from 'next/Link';
 import { useRouter } from 'next/router';
 import ReactTooltip from 'react-tooltip';
 
+import { Coordinates } from '@components/Map';
+
 import { FixtureWrapper, InfoWrapper, TeamLogo, TournamentWrapper } from './styles';
 
 interface FixtureTeam {
@@ -13,11 +15,6 @@ interface FixtureTeam {
         logo?: string;
     };
     score: number;
-}
-
-interface Coordinates {
-    latitude: number;
-    longitude: number;
 }
 
 interface Stadium {
@@ -70,7 +67,7 @@ export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate,
     const homeLogo = homeTeam.team.logo || '/teams/default.webp';
     const awayLogo = homeTeam.team.logo || '/teams/default.webp';
 
-    const tournamentLogo = `/leagues/${tournament.id}.svg`;
+    const tournamentLogo = `/leagues/${tournament.name.toLocaleLowerCase().replace(/ /g, '')}.svg`;
 
     const { query } = useRouter();
     const href = {
@@ -78,11 +75,16 @@ export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate,
         ...query.year && { query: { year: query.year } }
     };
 
+    const handleMobileTooltip = (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+    };
+
     return (
         <Link href={href}>
             <a>
                 <FixtureWrapper active={active}>
-                    <TournamentWrapper data-tip={tournament.name}>
+                    <TournamentWrapper data-tip={tournament.name} onClick={handleMobileTooltip}>
                         <img src={tournamentLogo} alt={tournament.name} />
                     </TournamentWrapper>
                     <ReactTooltip place="top" type="dark" effect="solid"/>

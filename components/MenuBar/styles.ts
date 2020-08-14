@@ -2,8 +2,11 @@ import styled from 'styled-components';
 
 // import { Map, BarChart } from '@styles/Icons';
 
-export const Container = styled.div`
+export const Container = styled.nav`
     background: var(--primary);
+
+    max-height: 100%;
+    max-width: 100%;
 
     display: flex;
     flex-direction: column;
@@ -16,13 +19,19 @@ export const Container = styled.div`
 
     padding: 32px 24px;
     height: 100vh;
+
+    @media(max-width: 375px) {
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 0;
+    }
 `;
 
-type MenuButtonProps = {
+type MenuItemProps = {
     active: boolean;
 };
 
-export const MenuButton = styled.button<MenuButtonProps>`
+export const MenuItem = styled.li<MenuItemProps>`
     display: flex;
     align-items: center;
     flex-shrink: 0;
@@ -32,11 +41,15 @@ export const MenuButton = styled.button<MenuButtonProps>`
 
     cursor: pointer;
 
-    & + button {
+    & + li {
         margin-top: 16px;
+
+        @media(max-width: 375px) {
+            margin-top: 0;
+        }
     }
 
-    & > svg {
+    svg {
         color: ${(props) => props.active ? 'var(--secondary)' : 'var(--white)'};
         fill: ${(props) => props.active ? 'var(--secondary)' : 'var(--white)'};
 

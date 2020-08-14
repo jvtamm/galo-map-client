@@ -24,7 +24,7 @@ export const FixtureWrapper = styled.div<FixtureWrapperProps>`
     height: 70px;
     border-bottom: 1px solid var(--light-effect);
     cursor: pointer;
-    padding: 0 8px;
+    padding: 0 22px;
 
     &:hover {
         background: rgb(242, 244, 247);
@@ -84,8 +84,8 @@ export const TeamLogo = styled.img`
 `;
 
 export const TournamentWrapper = styled.a`
-    z-index: 9999;
-
+    z-index: 2;
+    
     & > img {
         height: 20px;
         width: 20px;

@@ -12,14 +12,33 @@ export const Container = styled.div`
 
     width: 100vw;
     height: 100vh;
+
+    @media(max-width: 375px) {
+        flex-direction: column;
+    }
 `;
 
 export const Menu = styled.div`
-    flex: 1;
-
     max-width: 80px;
+
+    @media(max-width: 375px) {
+        max-width: 100vw;
+        height: 70px;
+    }
 `;
 
 export const Main = styled.main`
-    flex: 11;
+    flex-grow: 1;
+    /* max-height: 100%; */
+
+    & > div {
+        max-height: 100%;
+
+        display: flex;
+        height: 100%;
+    }
+
+    @media(max-width: 375px) {
+        height: calc(100% - 70px)
+    }
 `;

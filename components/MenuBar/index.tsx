@@ -2,7 +2,7 @@ import Link from 'next/Link';
 import React, { Fragment } from 'react';
 import { withRouter, useRouter, NextRouter } from 'next/router';
 
-import { Container, MenuButton } from './styles';
+import { Container, MenuItem } from './styles';
 
 export interface MenuItem {
     name: string;
@@ -25,11 +25,13 @@ const MenuBar: React.FC<MenuBarProps> = ({ items }: MenuBarProps) => {
 
                 return (
                     <Fragment key={name}>
-                        <Link href={href}>
-                            <MenuButton active={isActive}>
-                                <Icon />
-                            </MenuButton>
-                        </Link>
+                        <MenuItem active={isActive}>
+                            <Link href={href}>
+                                <a>
+                                    <Icon />
+                                </a>
+                            </Link>
+                        </MenuItem>
                     </Fragment>
                 );
             })}

@@ -1,79 +1,18 @@
 import React from 'react';
-import styled from 'styled-components';
 import dynamic from 'next/dynamic';
 
-import { Layout } from '@components/Layout';
-import Chip from '@components/Chip';
-import { Swiper } from '@components/SliderSelection';
-import { Filter, FilterSection } from '@components/Filter';
-import { useFilters, FilterProvider } from '@contexts/filter';
-import { Fixture } from '@components/Fixture';
-import { SeasonService, SeasonRange } from '@services/season';
 import api from '@services/api';
+import { ChipFilter } from '@components/ChipFilter';
+import { FilterProvider } from '@contexts/filter';
+import { FilterSection } from '@components/Filter';
+import { FixtureList } from '@components/FixtureList';
+import { Layout } from '@components/Layout';
+import { SeasonService, SeasonRange } from '@services/season';
+import { Swiper } from '@components/SliderSelection';
 
 const Map = dynamic(() => import('@components/Map'), {
     ssr: false
 });
-
-interface FiltersProps {
-    sections: FilterSection;
-    children?: React.ReactNode,
-}
-
-const Filters: React.FC<FiltersProps> = ({ sections }: FiltersProps) => {
-    const { filters, removeFilter } = useFilters();
-
-    const ChipWrapper = styled.div`
-        display: inline-flex;
-        flex-wrap: wrap;
-
-        & > div {
-            margin: 6px;
-            margin-left: 0%;
-        }
-    `;
-
-    return (
-        <div style={{ display: 'flex', minHeight: '60px', alignItems: 'center', padding: '0 16px', borderBottom: '1px solid var(--light-effect)' }}>
-            <div style={{ marginRight: '32px' }}>
-                <Filter sections={sections} />
-            </div>
-            <ChipWrapper>
-                {
-                    filters.map(({ key, label }) => <Chip color="success" key={key} text={label} handleClose={() => removeFilter(key)} />)
-                }
-            </ChipWrapper>
-        </div>
-    );
-};
-
-interface FixtureListProps {
-    fixtures: Array<any>;
-    initialSelected: any;
-    children?: React.ReactNode;
-}
-
-const FixtureList: React.FC<FixtureListProps> = ({ fixtures, initialSelected }: FixtureListProps) => {
-    const { filters, includes } = useFilters();
-
-    const filteredFixtures = filters.length === 0 ? fixtures : fixtures.filter(({ tournament }) => includes(tournament.id));
-
-    return (
-        <>
-            {filteredFixtures.map((fixture) => {
-                const anchor = `/partida/${fixture.id}`;
-                const redirect = {
-                    url: anchor,
-                    keepParams: true
-                };
-
-                const fixtureProp = { ...fixture, redirect };
-
-                return <Fixture {...fixtureProp} active={fixture.id === initialSelected.id} key={fixture.id} />;
-            })}
-        </>
-    );
-};
 
 interface MatchesProps {
     season: SeasonRange;
@@ -92,11 +31,11 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
     const previous = season.previous ? `/?year=${season.previous.year}` : '';
 
     const { coordinates } = matchFacts.ground;
-    const point = [coordinates.latitude, coordinates.longitude];
+    // const point = [coordinates.latitude, coordinates.longitude];
 
     return (
         <Layout>
-            <div style={{ display: 'flex', height: '100%' }}>
+            <div>
                 <div style={{
                     width: '40%',
                     background: 'var(--white)',
@@ -105,12 +44,13 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
                 }}>
 
                     <div style={{ borderBottom: '1px solid var(--light-effect)', height: '60px' }}>
-                        {/* <Swiper options={swiperOptions} initialValue={initialSeason?.value} onChange={redirect} /> */}
                         <Swiper value={swiperValue} next={next} previous={previous} />
                     </div>
 
                     <FilterProvider>
-                        <Filters sections={filters} />
+                        <div style={{ display: 'flex', minHeight: '60px', alignItems: 'center', padding: '0 16px', borderBottom: '1px solid var(--light-effect)' }}>
+                            <ChipFilter sections={filters}/>
+                        </div>
                         <div style={{ maxHeight: 'calc(100% - 120px)', overflow: 'auto' }}>
                             <FixtureList fixtures={fixtures} initialSelected={matchFacts} />
                         </div>
@@ -118,7 +58,7 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
 
                 </div>
                 <div style={{ width: '60%', height: '100%' }}>
-                    <Map point={point} />
+                    <Map points={[coordinates, { latitude: -19.865833, longitude: -43.970833 }]} />
                 </div>
             </div>
         </Layout>

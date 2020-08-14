@@ -4,7 +4,7 @@ import { FilterList } from '@styles/Icons';
 
 export const Container = styled.div`
     display: flex;
-    width: 100%;
+    /* width: 100%; */
 
     background: transparent;
     position: relative;
@@ -29,7 +29,7 @@ export const Dropdown = styled.div`
     flex-direction: column;
     position: absolute;
     background: var(--white);   
-    z-index: 300;
+    z-index: 3;
     top: 28px;
     border: 1px solid rgba(23, 36, 38, 0.2);
     border-radius: 2px;
