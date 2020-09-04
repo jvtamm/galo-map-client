@@ -84,10 +84,10 @@ export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate,
         <Link href={href}>
             <a>
                 <FixtureWrapper active={active}>
-                    <TournamentWrapper data-tip={tournament.name} onClick={handleMobileTooltip}>
+                    <TournamentWrapper data-tip={tournament.name} data-type="dark" onClick={handleMobileTooltip}>
                         <img src={tournamentLogo} alt={tournament.name} />
                     </TournamentWrapper>
-                    <ReactTooltip place="top" type="dark" effect="solid"/>
+                    <ReactTooltip place="top" effect="solid" />
 
                     <span>{homeTeam.team.displayName || homeTeam.team.name}</span>
                     <TeamLogo src={homeLogo} />

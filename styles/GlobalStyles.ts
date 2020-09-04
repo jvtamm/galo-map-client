@@ -7,11 +7,6 @@ export default createGlobalStyle`
         box-sizing: border-box;
     }
 
-    .leaflet-container {
-        height: 100%;
-        width: 100%;
-        overflow: hidden;
-    }
 
     html, body, #root {
         max-height: 100vh;
@@ -49,5 +44,16 @@ export default createGlobalStyle`
         --light-effect: rgba(23, 36, 38, 0.1);
         --white: #ffffff;
         --warning: #D71920;
+    }
+
+    .leaflet-container {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .leaflet-div-icon {
+        background: transparent;
+        border: 0;
     }
 `;

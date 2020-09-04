@@ -83,7 +83,7 @@ export const TeamLogo = styled.img`
     height: 25px;
 `;
 
-export const TournamentWrapper = styled.a`
+export const TournamentWrapper = styled.p`
     z-index: 2;
     
     & > img {

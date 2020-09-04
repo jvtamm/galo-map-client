@@ -58,7 +58,8 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
 
                 </div>
                 <div style={{ width: '60%', height: '100%' }}>
-                    <Map points={[coordinates, { latitude: -19.865833, longitude: -43.970833 }]} />
+                    <Map points={[coordinates]} />
+                    {/* <Map points={[]} snakePoints={[coordinates, { latitude: -19.865833, longitude: -43.970833 }]} /> */}
                 </div>
             </div>
         </Layout>
