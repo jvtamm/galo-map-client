@@ -5,7 +5,7 @@ import ReactTooltip from 'react-tooltip';
 
 import { Coordinates } from '@components/Map';
 
-import { FixtureWrapper, InfoWrapper, TeamLogo, TournamentWrapper } from './styles';
+import { FixtureWrapper, InfoWrapper, TeamLogo, TournamentWrapper, LaunchIcon } from './styles';
 
 interface FixtureTeam {
     team: {
@@ -33,6 +33,7 @@ interface Tournament {
 }
 
 interface FixtureProps {
+    id: string;
     homeTeam: FixtureTeam;
     awayTeam: FixtureTeam;
     matchDate: Date;
@@ -57,7 +58,7 @@ const formatHours = (date: Date) => {
     return `${hour}:${minutes}`;
 };
 
-export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate, active, redirect, tournament }: FixtureProps) => {
+export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate, active, redirect, tournament, id }: FixtureProps) => {
     const matchDateObj = new Date(matchDate);
     const estimatedEndTime = new Date(matchDateObj.getTime());
     // const estimatedEndTime = new Date(matchDate.getTime());
@@ -69,10 +70,20 @@ export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate,
 
     const tournamentLogo = `/leagues/${tournament.name.toLocaleLowerCase().replace(/ /g, '')}.svg`;
 
-    const { query } = useRouter();
+    const { query, push: pushRoute } = useRouter();
     const href = {
         pathname: redirect.url,
         ...query.year && { query: { year: query.year } }
+    };
+
+    const handleDetails = (id: string) => {
+        const cleanedQuery = { ...query };
+        delete cleanedQuery.id;
+
+        pushRoute({
+            pathname: `/partida/${id}/resumo`,
+            query: cleanedQuery
+        });
     };
 
     const handleMobileTooltip = (event) => {
@@ -82,14 +93,16 @@ export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate,
 
     return (
         <Link href={href}>
-            <a>
+            <a disabled={active}>
                 <FixtureWrapper active={active}>
                     <TournamentWrapper data-tip={tournament.name} data-type="dark" onClick={handleMobileTooltip}>
                         <img src={tournamentLogo} alt={tournament.name} />
                     </TournamentWrapper>
                     <ReactTooltip place="top" effect="solid" />
 
-                    <span>{homeTeam.team.displayName || homeTeam.team.name}</span>
+                    <span title={homeTeam.team.displayName || homeTeam.team.name}>
+                        {homeTeam.team.displayName || homeTeam.team.name}
+                    </span>
                     <TeamLogo src={homeLogo} />
                     <InfoWrapper>
                         {new Date() > estimatedEndTime && (
@@ -104,12 +117,17 @@ export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate,
                         )}
                     </InfoWrapper>
                     <TeamLogo src={awayLogo} />
-                    <span>{awayTeam.team.displayName || awayTeam.team.name}</span>
+                    <span title={awayTeam.team.displayName || awayTeam.team.name}>
+                        {awayTeam.team.displayName || awayTeam.team.name}
+                    </span>
 
-                    <TournamentWrapper>
-                        {/* <img src={tournamentLogo} alt={tournament.name} /> */}
-                    </TournamentWrapper>
-
+                    {
+                        active && (
+                            <button style={{ cursor: 'pointer' }} onClick={() => handleDetails(id)}>
+                                <LaunchIcon />
+                            </button>
+                        )
+                    }
                 </FixtureWrapper>
             </a>
         </Link>

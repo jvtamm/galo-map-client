@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 
 import api from '@services/api';
@@ -9,6 +9,7 @@ import { FixtureList } from '@components/FixtureList';
 import { Layout } from '@components/Layout';
 import { SeasonService, SeasonRange } from '@services/season';
 import { Swiper } from '@components/SliderSelection';
+import MapProvider, { MapContextData } from '@contexts/map';
 
 const Map = dynamic(() => import('@components/Map'), {
     ssr: false
@@ -31,15 +32,22 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
     const previous = season.previous ? `/?year=${season.previous.year}` : '';
 
     const { coordinates } = matchFacts.ground;
-    // const point = [coordinates.latitude, coordinates.longitude];
+    const points = [{ position: coordinates as Coordinates }];
+
+    const mapProviderRef = useRef<MapContextData>(null);
+    useEffect(() => {
+        const { definePoints, setZoom } = mapProviderRef.current;
+        definePoints(points);
+        setZoom(17);
+    }, [points]);
 
     return (
         <Layout>
             <div>
                 <div style={{
-                    width: '40%',
+                    width: '45%',
                     background: 'var(--white)',
-                    boxShadow: '5px 0px 20px rgba(0,0,0,.3)',
+                    borderRight: '1px solid var(--light-effect)',
                     height: '100%'
                 }}>
 
@@ -57,9 +65,10 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
                     </FilterProvider>
 
                 </div>
-                <div style={{ width: '60%', height: '100%' }}>
-                    <Map points={[coordinates]} />
-                    {/* <Map points={[]} snakePoints={[coordinates, { latitude: -19.865833, longitude: -43.970833 }]} /> */}
+                <div style={{ width: '55%', height: '100%' }}>
+                    <MapProvider ref={mapProviderRef}>
+                        <Map />
+                    </MapProvider>
                 </div>
             </div>
         </Layout>

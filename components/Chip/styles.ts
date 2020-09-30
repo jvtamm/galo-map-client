@@ -15,6 +15,8 @@ export const Container = styled.div<ContainerProps>`
     border-color: ${props => `var(--${props.color})` || 'var(--primary-text)'};
     border-radius: 25px;
 
+    align-items: center;
+
     & > label {
         font-size: 14px;
         line-height: 16px;

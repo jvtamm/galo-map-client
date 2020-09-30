@@ -6,11 +6,6 @@ export interface Season {
     label?: string;
 }
 
-// interface SeasonSummary {
-//     seasons: Season[];
-//     current?: Season
-// }
-
 export interface SeasonRange {
     current: Season;
     previous?: Season;

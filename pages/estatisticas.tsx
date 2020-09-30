@@ -1,129 +1,218 @@
-import React, { useState } from 'react';
-
-import { Layout } from '@components/Layout';
 import dynamic from 'next/dynamic';
+import React, { useEffect, useRef, useState } from 'react';
+
+import api from '@services/api';
+import { Layout } from '@components/Layout';
+import { Timeline, TimelineItemProps } from '@components/Timeline';
+import { TimelineWrapper, DistanceWrapper } from '@styles/pages/Estatisticas';
+import MapProvider, { MapContextData } from '@contexts/map';
+import { generateMarker } from '@components/Map/Marker';
+import { FixtureProps, StadiumPopup } from '@components/StadiumPopup';
 
 const Map = dynamic(() => import('@components/Map'), {
     ssr: false
 });
 
-const Statistics: React.FC = () => {
+const SnakeAnim = dynamic(() => import('components/Map/SnakeAnim'), {
+    ssr: false
+});
+
+interface MapStatsProps {
+    fixtures: Array<any>;
+    groundFixtures: any;
+}
+
+const markerOptions = {
+    small: generateMarker(''),
+    large: generateMarker('stadium'),
+    breakpoint: 4
+};
+
+const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapStatsProps) => {
     const [animating, setAnimating] = useState(false);
+    const [timelineItems, setTimelineItems] = useState<TimelineItemProps[]>([]);
+    const [groundFixtureMap, setGroundFixtureMap] = useState<FixtureProps[]>([]);
+    const [grounds, setGrounds] = useState<Array<any>>([]);
 
-    const [nextLocations, setNextLocations] = useState([
-        { latitude: -31.63179605, longitude: -60.715666350237484 },
-        { latitude: -18.596747, longitude: -46.521592 },
-        { latitude: -7.253889, longitude: -35.880833 },
-        { latitude: -19.865833, longitude: -43.970833 },
-        { latitude: -19.908517, longitude: -43.917856 },
-        { latitude: -7.75807135, longitude: -37.63183459381579 }
-    ]);
+    const mapProviderRef = useRef<MapContextData>(null);
 
-    const [locations, setLocations] = useState([
-        { latitude: -18.913889, longitude: -48.2325 },
-        { latitude: -19.908517, longitude: -43.917856 }
-    ]);
+    useEffect(() => {
+        const { defineAdditionalPoints } = mapProviderRef.current;
 
-    const [animatedLocations, setAnimatedLocations] = useState([]);
+        const groundsList = fixtures.map(({ ground }) => ground.coordinates);
+        setGrounds(groundsList);
 
-    const next = () => {
-        const nextLocation = nextLocations.shift();
+        const initialPoistions = groundsList.slice(0, 2).map(coords => {
+            const hash = `${coords.latitude}${coords.longitude}`;
+            const marker = {
+                ...markerOptions,
+                popup: <StadiumPopup fixtures={groundFixtureMap[hash]} />
+            };
 
-        setLocations([...locations, nextLocation]);
-        setNextLocations(nextLocations);
-    };
+            return {
+                position: coords,
+                marker
+            };
+        });
+        defineAdditionalPoints(initialPoistions);
 
-    const back = () => {
-        if (!locations || !locations.length) return;
-        if (!animatedLocations || !animatedLocations.length) return;
+        const currentTimelineItems = fixtures.map((match) => ({
+            id: match.id as string,
+            matchDate: new Date(match.matchDate),
+            ground: (match.ground.nickname || match.ground.name) as string,
+            homeTeam: match.homeTeam.team.abbreviation as string,
+            awayTeam: match.awayTeam.team.abbreviation as string
+        }));
 
-        const { latitude: lastLat, longitude: lastLng } = locations[locations.length - 1];
-        const { latitude: lastAnimLat, longitude: lastAnimLng } = animatedLocations[
-            animatedLocations.length - 1
-        ];
+        setTimelineItems(currentTimelineItems);
 
-        if (lastLat !== lastAnimLat || lastLng !== lastAnimLng) return;
-
-        const updatedAnimated = animatedLocations.slice(
-            0,
-            animatedLocations.length - 1
-        );
-        const updatedLocations = [updatedAnimated[updatedAnimated.length - 1]];
-
-        nextLocations.unshift({ latitude: lastLat, longitude: lastLng });
-
-        setNextLocations([...nextLocations]);
-        setLocations(updatedLocations);
-        setAnimatedLocations(updatedAnimated);
-    };
-
-    const removeSequenceDuplicates = (locations) => {
-        const newLocations = [];
-
-        locations.forEach((loc, index) => {
-            if (index === 0) {
-                newLocations.push(loc);
-            } else {
-                const lastLoc = locations[index - 1];
-
-                if (lastLoc.latitude !== loc.latitude && lastLoc.longitude !== loc.longitude) {
-                    newLocations.push(loc);
+        const groundMap = { ...groundFixtures };
+        Object.keys(groundMap).forEach((key) => {
+            groundMap[key] = groundMap[key].map((match) => ({
+                ground: (match.ground.nickname || match.ground.name) as string,
+                homeTeam: {
+                    name: match.homeTeam.team.displayName as string,
+                    score: match.homeTeam.score
+                },
+                awayTeam: {
+                    name: match.awayTeam.team.displayName as string,
+                    score: match.awayTeam.score
                 }
-            }
+            }));
         });
 
-        return newLocations;
-    };
+        setGroundFixtureMap(groundMap);
+    }, []);
 
     const onAnimationEnd = () => {
-        console.log('Animation ended');
-        const lastIndex = locations.length - 1;
-        // const animatedPaths = locations.slice(0, lastIndex);
+        const {
+            definePoints,
+            defineAdditionalPoints,
+            additionalPoints: locations,
+            points: animatedLocations
+        } = mapProviderRef.current;
 
-        const newAnimatedLocations = [...animatedLocations, ...locations];
+        const lastIndex = locations.length - 1;
+
+        let nonStartinglocations = [...locations];
+        if (animatedLocations.length) {
+            nonStartinglocations = nonStartinglocations.slice(1, locations.length);
+        }
+
+        const newAnimatedLocations = [...animatedLocations, ...nonStartinglocations].map(p => {
+            const hash = `${p.position[0]}${p.position[1]}`;
+
+            p.marker = {
+                ...markerOptions,
+                popup: <StadiumPopup fixtures={groundFixtureMap[hash]} />
+            };
+
+            return p;
+        });
 
         const lastPoint = locations[lastIndex];
-        setLocations([lastPoint]);
-        console.log('locations', locations);
-
-        setAnimatedLocations(removeSequenceDuplicates(newAnimatedLocations));
+        defineAdditionalPoints([lastPoint]);
+        definePoints(newAnimatedLocations);
 
         setAnimating(false);
     };
 
     const onAnimationStart = () => {
-        console.log('Animation started');
         setAnimating(true);
+    };
+
+    const onSelectionChange = (index: number, lastIndex: number) => {
+        const { definePoints, defineAdditionalPoints, points: animatedLocations } = mapProviderRef.current;
+
+        if (index > lastIndex) { // moving forward
+            const currentIndex = animatedLocations.length;
+            const newAdditionalPoints = grounds.slice(currentIndex - 1, index + 1).map(coords => {
+                const hash = `${coords.latitude}${coords.longitude}`;
+
+                const marker = {
+                    ...markerOptions,
+                    popup: <StadiumPopup fixtures={groundFixtureMap[hash]} />
+                };
+
+                return {
+                    position: coords,
+                    marker
+                };
+            });
+            defineAdditionalPoints(newAdditionalPoints);
+        } else { // moving backwards
+            const updatedAnimated = animatedLocations.slice(
+                0,
+                index + 1
+            );
+            const updatedLocations = [updatedAnimated[updatedAnimated.length - 1]];
+
+            defineAdditionalPoints(updatedLocations);
+            definePoints(updatedAnimated);
+        }
     };
 
     return (
         <Layout>
             <div>
-                <div style={{
-                    width: '40%',
-                    background: 'var(--white)',
-                    boxShadow: '5px 0px 20px rgba(0,0,0,.3)',
-                    height: '100%'
-                }}>
+                <div style={{ width: '100%', height: '100%' }}>
+                    <MapProvider ref={mapProviderRef}>
+                        <Map showPolylines={true}>
+                            <SnakeAnim
+                                onAnimationStart={onAnimationStart}
+                                onAnimationEnd={onAnimationEnd} />
+                            <TimelineWrapper>
+                                <Timeline
+                                    selectable={!animating}
+                                    items={timelineItems}
+                                    onSelectionChange={onSelectionChange}
+                                    initialSelectedIndex={timelineItems.length > 1 ? 1 : 0} />
+                            </TimelineWrapper>
 
-                    <button onClick={back} disabled={animating}>Go back!</button>
-                    <button onClick={next} disabled={nextLocations.length === 0 || animating}> Next!</button>
-
-                </div>
-                <div style={{ width: '60%', height: '100%' }}>
-                    <Map
-                        points={animatedLocations}
-                        showPolylines={true}
-                        showMarker={true}
-                        snakePoints={locations}
-                        onAnimationStart={onAnimationStart}
-                        onAnimationEnd={onAnimationEnd}
-                    />
-
+                            {
+                                mapProviderRef && mapProviderRef.current && (
+                                    <DistanceWrapper>
+                                        {/* {console.log(mapProviderRef.current)} */}
+                                        <div>
+                                            { Math.round(mapProviderRef.current.distance).toLocaleString('pt')}
+                                            <span>km</span>
+                                        </div>
+                                    </DistanceWrapper>
+                                )
+                            }
+                        </Map>
+                    </MapProvider>
                 </div>
             </div>
         </Layout>
     );
+};
+
+export async function getServerSideProps(context) {
+    const year = context.query.year || (new Date()).getFullYear();
+
+    const { data } = await api.get(`/fixture?year=${year}`);
+
+    const grounds = {};
+    data.fixtures.forEach((fixture) => {
+        const { coordinates } = fixture.ground;
+        const { latitude, longitude } = coordinates;
+        const hash = `${latitude}${longitude}`;
+
+        if (hash in grounds) {
+            grounds[hash].push(fixture);
+        } else {
+            grounds[hash] = [fixture];
+        }
+    });
+
+    const props = {
+        fixtures: data.fixtures,
+        groundFixtures: grounds
+        // curent: nextFixture || data.fixtures[0]
+    };
+
+    return { props };
 };
 
 export default Statistics;

@@ -1,50 +1,49 @@
 import { useEffect } from 'react';
 import { useLeaflet } from 'react-leaflet';
-import L, { LatLngExpression } from 'leaflet';
+import L from 'leaflet';
 import 'leaflet.polyline.snakeanim/L.Polyline.SnakeAnim.js';
+import { generateMarker } from './Marker';
+// import { Point } from '../Map';
+import { useMap } from '@contexts/map';
 
-const icon = L.icon({
-    iconSize: [25, 41],
-    iconAnchor: [10, 41],
-    popupAnchor: [2, -40],
-    iconUrl: 'https://unpkg.com/leaflet@1.6/dist/images/marker-icon.png'
-});
+const defaultIcon = L.divIcon(generateMarker('stadium'));
 
 interface SnakeAnimProps {
-    locations: LatLngExpression[];
+    // locations: Point[];
     onAnimationStart?: Function;
     onAnimationEnd?: Function;
 }
 
-const SnakeAnim = ({ locations, onAnimationEnd, onAnimationStart }: SnakeAnimProps) => {
+const SnakeAnim: React.FC<SnakeAnimProps> = ({ onAnimationEnd, onAnimationStart }) => {
     const { map } = useLeaflet();
+    const { additionalPoints: points, getMarker, zoom } = useMap();
 
     useEffect(() => {
-        if (!locations || locations.length < 2) return;
+        if (!points || points.length < 2) return;
 
-        const features: Array<any> = [L.marker(locations[0], { icon })];
+        const { position } = points[0];
+        const icon = getMarker(points[0], zoom) ? L.divIcon(getMarker(points[0], zoom)) : defaultIcon;
+        const features: Array<any> = [L.marker(position, { icon })];
 
-        for (let i = 0; i < locations.length - 1; i++) {
-            const start = locations[i];
-            const end = locations[i + 1];
+        for (let i = 0; i < points.length - 1; i++) {
+            const { position } = points[i];
+            const { position: nextPosition } = points[i + 1];
 
-            features.push(L.polyline([start, end], {
+            features.push(L.polyline([position, nextPosition], {
                 weight: 2,
                 snakingSpeed: 300,
                 color: 'black'
             }));
 
-            features.push(L.marker(end, { icon }));
+            const icon = getMarker(points[i], zoom) ? L.divIcon(getMarker(points[i], zoom)) : defaultIcon;
+            features.push(L.marker(nextPosition, { icon }));
         }
 
         const route = L.featureGroup(features);
 
         map.addLayer(route);
 
-        // map.fitBounds(route.getBounds());
-
         route.on('snakestart', () => {
-            console.log('starting');
             if (onAnimationStart) {
                 onAnimationStart();
             }
@@ -58,7 +57,7 @@ const SnakeAnim = ({ locations, onAnimationEnd, onAnimationStart }: SnakeAnimPro
         });
 
         route.snakeIn();
-    }, [locations, map]);
+    }, [points, map]);
 
     return null;
 };

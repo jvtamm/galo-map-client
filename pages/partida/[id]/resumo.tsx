@@ -1,7 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import dynamic from 'next/dynamic';
+import React from 'react';
 
-// import api from '@services/api';
 import { ChipFilter } from '@components/ChipFilter';
 import { FilterProvider } from '@contexts/filter';
 import { FilterSection } from '@components/Filter';
@@ -9,17 +7,8 @@ import { FixtureList } from '@components/FixtureList';
 import { Layout } from '@components/Layout';
 import { SeasonService, SeasonRange } from '@services/season';
 import { Swiper } from '@components/SliderSelection';
-import { Coordinates } from '@components/Map';
-import MapProvider, { MapContextData } from '@contexts/map';
 import { Fixture, FixtureService } from '@services/fixture';
-// import { MatchFacts } from '@components/MatchFacts';
-// import { Lineup } from '@components/Lineup';
-// import { MatchHeader } from '@components/MatchHeader';
-// import { MatchEvents } from '@components/MatchEvents';
-
-const Map = dynamic(() => import('@components/Map'), {
-    ssr: false
-});
+import { MatchFacts } from '@components/MatchFacts';
 
 interface MatchesProps {
     season: SeasonRange;
@@ -34,17 +23,8 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
         value: season.current.id
     };
 
-    const next = season.next ? `/?year=${season.next.year}` : '';
-    const previous = season.previous ? `/?year=${season.previous.year}` : '';
-
-    const { coordinates } = matchFacts.ground;
-    const points = [{ position: coordinates as Coordinates }];
-
-    const mapProviderRef = useRef<MapContextData>(null);
-    useEffect(() => {
-        const { definePoints } = mapProviderRef.current;
-        definePoints(points);
-    }, [points]);
+    const next = season.next ? `/partida/${matchFacts.id}/resumo?year=${season.next.year}` : '';
+    const previous = season.previous ? `/partida/${matchFacts.id}/resumo?year=${season.previous.year}` : '';
 
     return (
         <Layout>
@@ -62,21 +42,16 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
 
                     <FilterProvider>
                         <div style={{ display: 'flex', minHeight: '60px', alignItems: 'center', padding: '0 16px', borderBottom: '1px solid var(--light-effect)' }}>
-                            <ChipFilter sections={filters} />
+                            <ChipFilter sections={filters}/>
                         </div>
                         <div style={{ maxHeight: 'calc(100% - 120px)', overflow: 'auto' }}>
                             <FixtureList fixtures={fixtures} initialSelected={matchFacts} />
                         </div>
                     </FilterProvider>
-                    {/* <MatchHeader />
-                    <MatchEvents /> */}
-                    {/* <Lineup /> */}
-                    {/* <MatchFacts {...fixtures[12]}/> */}
+
                 </div>
                 <div style={{ width: '55%', height: '100%' }}>
-                    <MapProvider ref={mapProviderRef}>
-                        <Map />
-                    </MapProvider>
+                    <MatchFacts {...matchFacts}/>
                 </div>
             </div>
         </Layout>
@@ -84,6 +59,7 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
 };
 
 export async function getServerSideProps(context) {
+    const { id } = context.params;
     const year = context.query.year || (new Date()).getFullYear();
 
     const seasonService = new SeasonService();
@@ -91,12 +67,13 @@ export async function getServerSideProps(context) {
 
     const fixtureService = new FixtureService();
     const fixtures = await fixtureService.query({ year: current.year });
-    const nextFixture = fixtureService.getNextMatch(fixtures);
 
     const filters = fixtureService.getTournaments(fixtures).map(({ id, name }) => ({
         key: id,
         label: name
     }));
+
+    const currentFixture = await fixtureService.getById(id);
 
     const props = {
         season: {
@@ -108,7 +85,7 @@ export async function getServerSideProps(context) {
         filters: {
             Campeonatos: filters
         },
-        matchFacts: nextFixture || fixtures[0]
+        matchFacts: currentFixture
     };
 
     return { props };

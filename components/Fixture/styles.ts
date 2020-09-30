@@ -1,3 +1,4 @@
+import { Launch } from '@styled-icons/material-outlined';
 import styled from 'styled-components';
 
 interface FixtureWrapperProps {
@@ -23,7 +24,7 @@ export const FixtureWrapper = styled.div<FixtureWrapperProps>`
     user-select: none;
     height: 70px;
     border-bottom: 1px solid var(--light-effect);
-    cursor: pointer;
+    cursor: ${({ active }) => active ? 'default' : 'pointer'};
     padding: 0 22px;
 
     &:hover {
@@ -90,4 +91,13 @@ export const TournamentWrapper = styled.p`
         height: 20px;
         width: 20px;
     }
+`;
+
+export const LaunchIcon = styled(Launch)`
+    flex-shrink: 0;
+    z-index: 2;
+    
+    width: 14px;
+    height: 14px;
+    color: var(--primary-text);
 `;

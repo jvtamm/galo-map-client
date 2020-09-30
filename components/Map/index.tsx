@@ -1,18 +1,17 @@
-// import React, { useRef, useState, useEffect, useCallback } from 'react';
 import React, { useCallback, useState } from 'react';
-import Leaflet, { LatLngExpression, latLng } from 'leaflet';
+import Leaflet, { latLng, LatLngExpression, DivIconOptions } from 'leaflet';
 
 import {
     LayersControl,
     Map as LeafletMap,
     TileLayer,
     Marker,
-    Polyline
+    Polyline, Popup
 } from 'react-leaflet';
 
 import { MapContainer } from './styles';
-import SnakeAnim from './SnakeAnim';
 import { CircleTextMarker } from './CircleTextMarker';
+import { useMap } from '@contexts/map';
 
 const { BaseLayer, Overlay } = LayersControl;
 
@@ -21,25 +20,33 @@ export interface Coordinates {
     longitude: number;
 }
 
+export interface Point {
+    position: Coordinates;
+    marker?: DivIconOptions;
+}
+
+export interface FormattedPoint {
+    position: LatLngExpression;
+    marker?: DivIconOptions;
+}
+
 interface MapProps {
-    points: Coordinates[];
+    // points: Point[];
     showPolylines?: boolean;
-    showMarker?: boolean;
-    snakePoints?: Coordinates[];
-    onAnimationStart?: Function;
-    onAnimationEnd?: Function;
+    // additionalPoints?: Point[];
     children?: React.ReactNode;
 }
 
-const icon = Leaflet.icon({
-    iconSize: [25, 41],
-    iconAnchor: [10, 41],
-    popupAnchor: [2, -40],
-    iconUrl: 'https://unpkg.com/leaflet@1.6/dist/images/marker-icon.png'
-});
-
-const Map: React.FC<MapProps> = ({ points, snakePoints, onAnimationStart, onAnimationEnd, showPolylines, showMarker }: MapProps) => {
+const Map: React.FC<MapProps> = ({ showPolylines, children, ...rest }: MapProps) => {
     const [showLabels, setShowLabels] = useState(false);
+    const {
+        points,
+        additionalPoints,
+        zoom: currentZoom,
+        setZoom,
+        getMarker,
+        setDistance
+    } = useMap();
 
     const onLayeradd = ({ layer }) => {
         const { url } = layer.options;
@@ -53,29 +60,40 @@ const Map: React.FC<MapProps> = ({ points, snakePoints, onAnimationStart, onAnim
             const map = node.leafletElement;
 
             map.on('layeradd', onLayeradd);
+            // map.dragging = !Leaflet.Browser.mobile;
+            // map.tap = !Leaflet.Browser.mobile;
         }
     }, []);
 
-    const formattedPoints: LatLngExpression[] = points.map(({ latitude, longitude }) => {
-        return [latitude, longitude];
-    });
+    const allPoints = [...points, ...additionalPoints];
 
-    const formattedSnakePoints: LatLngExpression[] = (snakePoints || []).map(({ latitude, longitude }) => {
-        return [latitude, longitude];
-    });
+    if (!allPoints.length) {
+        setZoom(4);
+        allPoints.push({
+            position: [-15.749997, -47.9499962] as LatLngExpression
+        });
+    }
 
-    const allPoints: LatLngExpression[] = [...formattedPoints, ...formattedSnakePoints];
-
+    const allLocations = allPoints.map(({ position }) => position);
     const mapProps = {
         ref: layersRef,
-        zoom: 17,
-        ...allPoints.length === 1 && { center: allPoints[0] },
-        ...allPoints.length > 1 && { bounds: Leaflet.latLngBounds(allPoints) }
+        zoom: currentZoom || 17,
+        dragging: true,
+        tap: !Leaflet.Browser.mobile,
+        ...allLocations.length === 1 && { center: allLocations[0] },
+        ...allLocations.length > 1 && { bounds: Leaflet.latLngBounds(allLocations) }
     };
 
+    const onViewportChanged = (viewport) => {
+        const { zoom } = viewport;
+        setZoom(zoom);
+    };
+
+    let travelledDistance = 0;
+
     return process.browser && (
-        <MapContainer>
-            <LeafletMap {...mapProps}>
+        <MapContainer {...rest}>
+            <LeafletMap {...mapProps} onViewportChanged={onViewportChanged}>
                 <LayersControl position="topright">
                     <BaseLayer checked={allPoints.length === 1} name="Satelite">
                         <TileLayer
@@ -98,47 +116,70 @@ const Map: React.FC<MapProps> = ({ points, snakePoints, onAnimationStart, onAnim
                     </Overlay>
                 </LayersControl>
                 {
-                    formattedPoints.length > 0 && (showMarker || showPolylines) && (
-                        <>
-                            {
-                                showMarker && formattedPoints.map((location, index) => (
-                                    <Marker position={location} icon={icon} key={index} />
-                                ))
+                    points.length > 0 && points.map((point, index) => {
+                        const { position, marker: currentMarker } = point;
+
+                        const marker = getMarker(point, currentZoom);
+                        if (marker) {
+                            const icon = Leaflet.divIcon(marker);
+
+                            if (currentMarker.popup) {
+                                return (
+                                    <Marker position={position} icon={icon} key={index}>
+                                        <Popup maxHeight={200}>
+                                            {currentMarker.popup}
+                                        </Popup>
+                                    </Marker>
+                                );
                             }
-                            { showPolylines && <Polyline positions={formattedPoints} color="black" weight={2} /> }
+
+                            return <Marker position={position} icon={icon} key={index} />;
+                        }
+
+                        return null;
+                    })
+                }
+                {
+                    points.length > 0 && (
+                        <>
+                            {showPolylines && (
+                                <Polyline
+                                    positions={points.map(({ position }) => position)}
+                                    color="black"
+                                    opacity={0.75}
+                                    weight={2} />
+                            )}
                             {
-                                formattedPoints.map((location, index) => {
+                                points.map((location, index) => {
                                     if (index === 0) return;
 
-                                    const bounds = Leaflet.latLngBounds([location, formattedPoints[index - 1]]);
+                                    const { position } = location;
+                                    const bounds = Leaflet.latLngBounds([position, points[index - 1].position]);
                                     const center = bounds.getCenter();
 
-                                    const distance = latLng(location[0], location[1]).distanceTo(formattedPoints[index - 1]);
-                                    const distanceStr = `${(distance / 1000).toFixed(0)} km`;
+                                    const distance = latLng(position[0], position[1]).distanceTo(points[index - 1].position) / 1000;
+                                    travelledDistance += distance;
 
-                                    return (
+                                    const distanceStr = `${distance.toFixed(0)} km`;
+                                    const radius = currentZoom * 4;
+
+                                    return currentZoom > 4 && distance > 0 ? (
                                         <CircleTextMarker
                                             position={center}
                                             content={distanceStr}
-                                            radius={30}
+                                            radius={radius}
                                             borderWidth={2}
                                             key={index}
                                         />
-                                    );
+                                    ) : <></>;
                                 })
                             }
                         </>
                     )
                 }
+                { setDistance(travelledDistance) }
 
-                {
-                    formattedSnakePoints.length > 1 && (
-                        <SnakeAnim
-                            locations={formattedSnakePoints}
-                            onAnimationStart={onAnimationStart}
-                            onAnimationEnd={onAnimationEnd} />
-                    )
-                }
+                {children}
             </LeafletMap>
         </MapContainer>
     );

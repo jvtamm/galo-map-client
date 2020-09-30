@@ -44,6 +44,7 @@ export default createGlobalStyle`
         --light-effect: rgba(23, 36, 38, 0.1);
         --white: #ffffff;
         --warning: #D71920;
+        --light-grey: rgba(23, 36, 38, 0.4);
     }
 
     .leaflet-container {
@@ -55,5 +56,14 @@ export default createGlobalStyle`
     .leaflet-div-icon {
         background: transparent;
         border: 0;
+    }
+
+    .leaflet-popup-scrolled {
+        border: 0 !important;
+        margin-top: 45px;
+    }
+
+    .leaflet-popup-content{
+        margin-top: 45px;
     }
 `;

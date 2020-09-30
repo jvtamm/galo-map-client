@@ -10,9 +10,9 @@ interface CircleTextMarkerProps {
 }
 
 export const CircleTextMarker = ({ position, content, radius, borderWidth, ...rest }: CircleTextMarkerProps) => {
-    const size = radius * 2;
-    const style = `width: ${size}px; height: ${size}px; border: ${borderWidth}px solid red; 
-                   background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center;`;
+    const size = Math.min(radius * 2, 50);
+    const style = `width: ${size}px; height: ${size}px; border: ${borderWidth}px solid #CC0202;font-size:10px;background: white;
+                    border-radius: ${radius}px; display: flex; align-items: center; justify-content: center; text-align: center;`;
 
     const iconSize = size + (borderWidth * 2);
 
