@@ -1,16 +1,18 @@
 import React from 'react';
-import Link from 'next/Link';
-import { UrlObject } from 'url';
+// import Link from 'next/Link';
+// import { UrlObject } from 'url';
 
 import { NavTabWrapper, NavItem } from './styles';
 
-interface TabsProps {
-    href: UrlObject;
+export interface TabsProps {
+    // href: UrlObject;
+    handler: () => void;
     name: string;
+    identifier: string;
     active: boolean
 }
 
-interface NavTabProps {
+export interface NavTabProps {
     tabs: TabsProps[];
 }
 
@@ -20,14 +22,23 @@ export const NavTab: React.FC<NavTabProps> = ({ tabs }) => {
     return (
         <NavTabWrapper>
             {
-                tabs.map(({ href, name, active }, index) => {
+                tabs.map(({ handler, name, active }, index) => {
                     return (
-                        <Link href={href} key={index}>
-                            <a>
-                                <NavItem active={active}>{name}</NavItem>
-                            </a>
-                        </Link>
+                        <NavItem
+                            disabled={active}
+                            active={active}
+                            onClick={handler}
+                            key={index}>
+                            {name}
+                        </NavItem>
                     );
+                    // return (
+                    //     <Link href={href} key={index}>
+                    //         <a>
+                    //             <NavItem active={active}>{name}</NavItem>
+                    //         </a>
+                    //     </Link>
+                    // );
                 })
             }
         </NavTabWrapper>

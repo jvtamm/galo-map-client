@@ -18,7 +18,7 @@ interface NavItemProps {
     active: boolean;
 }
 
-export const NavItem = styled.div<NavItemProps>`
+export const NavItem = styled.button<NavItemProps>`
     font-weight: 700;
     font-size: 13px;
     letter-spacing: 0.2px;
@@ -28,8 +28,11 @@ export const NavItem = styled.div<NavItemProps>`
     white-space: nowrap;
     color: ${({ active }) => active ? 'var(--success)' : 'var(--light-grey)'};
     border-bottom: ${({ active }) => active ? '3px solid var(--success)' : '3px solid transparent'};
+    cursor: ${({ active }) => active ? 'default' : 'pointer'};
 
-    &:hover {
-        opacity: 0.4;
-    }
+    ${({ active }) => !active && `
+        &:hover {
+            opacity: 0.4;
+        }
+    `}
 `;

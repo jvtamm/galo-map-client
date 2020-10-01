@@ -1,50 +1,34 @@
 import React from 'react';
-import { useRouter } from 'next/router';
 
-import { MatchEvents } from '@components/MatchEvents';
 import { MatchHeader } from '@components/MatchHeader';
-import { MatchInfoBox } from '@components/MatchInfoBox';
-import { NavTab } from '@components/NavTab';
+import { NavTab, TabsProps } from '@components/NavTab';
 
 import { Fixture } from '@services/fixture';
-import { Event } from '@services/fixture-details';
 
-import { MatchFactsWrapper, InfoWrapper, TabbedInfo, Divider } from './styles';
+import { MatchTabsFactory } from './tabs';
+import { MatchFactsWrapper, TabbedInfo, CloseButton, CloseIcon } from './styles';
 
-export const MatchFacts: React.FC<Fixture> = ({ id, awayTeam, homeTeam, tournament, ground, referee, status, details, matchDate }) => {
+interface MatchFactsProps {
+    tabs: TabsProps[];
+    fixture: Fixture;
+    onClose?: () => void;
+}
+
+export const MatchFacts: React.FC<MatchFactsProps> = ({ fixture, tabs, onClose }) => {
+    const { awayTeam, homeTeam, status, matchDate } = fixture;
     const matchDateObj = new Date(matchDate);
 
-    const info = {
-        matchDate: matchDateObj,
-        ground: ground.name,
-        tournament,
-        referee
-    };
-
-    const { query, route } = useRouter();
-    delete query.id;
-
-    const tabs = [
-        {
-            href: {
-                pathname: `partida/${id}/resumo`,
-                query
-            },
-            name: 'Resumo',
-            active: route.includes('resumo')
-        },
-        {
-            href: {
-                pathname: `partida/${id}/escalacoes`,
-                query
-            },
-            name: 'Escalações',
-            active: route.includes('escalacoes')
-        }
-    ];
+    const activeTab = tabs.find(tab => tab.active);
 
     return (
         <MatchFactsWrapper>
+            {
+                onClose && (
+                    <CloseButton onClick={onClose}>
+                        <CloseIcon />
+                    </CloseButton>
+                )
+            }
             <MatchHeader
                 homeTeam={{ ...homeTeam.team, score: homeTeam.score }}
                 awayTeam={{ ...awayTeam.team, score: awayTeam.score }}
@@ -52,7 +36,8 @@ export const MatchFacts: React.FC<Fixture> = ({ id, awayTeam, homeTeam, tourname
                 completed={status === 'FT'}/>
             <NavTab tabs={tabs}/>
             <TabbedInfo>
-                {
+                <MatchTabsFactory type={activeTab && activeTab.identifier} fixture={fixture} />
+                {/* {
                     Boolean(details && details.events && details.events.length) && (
                         <>
                             <MatchEvents events={details.events as Event[]}/>
@@ -62,7 +47,7 @@ export const MatchFacts: React.FC<Fixture> = ({ id, awayTeam, homeTeam, tourname
                 }
                 <InfoWrapper>
                     <MatchInfoBox {...info} />
-                </InfoWrapper>
+                </InfoWrapper> */}
             </TabbedInfo>
         </MatchFactsWrapper>
     );

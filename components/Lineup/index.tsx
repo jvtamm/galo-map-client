@@ -16,29 +16,28 @@ export interface LineupProps {
     awayPlayers: SummonedPlayers;
 }
 
-// export const Lineup: React.FC<LineupProps> = ({ homePlayers, awayPlayers }: LineupProps) => {
-export const Lineup: React.FC<any> = () => {
+export const Lineup: React.FC<LineupProps> = ({ homePlayers, awayPlayers }: LineupProps) => {
     return (
         <div style={{ display: 'flex', flex: 1 }} >
             <div style={{ flex: 1, flexDirection: 'column' }}>
-                <div style={{ display: 'flex' }}>
-                    <b>1</b>
-                    <p>Victor</p>
-                </div>
-                <div style={{ display: 'flex' }}>
-                    <b>2</b>
-                    <p>Marcos Rocha</p>
-                </div>
+                {
+                    homePlayers.lineup.map(({ name, jersey, id }) => (
+                        <div style={{ display: 'flex' }} key={id}>
+                            <b>{jersey}</b>
+                            <p>{name}</p>
+                        </div>
+                    ))
+                }
             </div>
             <div style={{ flex: 1, flexDirection: 'column' }}>
-                <div style={{ display: 'flex' }}>
-                    <b>1</b>
-                    <p>Fábio</p>
-                </div>
-                <div style={{ display: 'flex' }}>
-                    <b>2</b>
-                    <p>Ceará</p>
-                </div>
+                {
+                    awayPlayers.lineup.map(({ name, jersey, id }) => (
+                        <div style={{ display: 'flex' }} key={id}>
+                            <b>{jersey}</b>
+                            <p>{name}</p>
+                        </div>
+                    ))
+                }
             </div>
         </div>
     );

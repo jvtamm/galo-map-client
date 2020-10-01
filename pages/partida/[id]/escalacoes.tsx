@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { ChipFilter } from '@components/ChipFilter';
 import { FilterProvider } from '@contexts/filter';
@@ -24,11 +24,20 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
         value: season.current.id
     };
 
-    const next = season.next ? `/partida/${matchFacts.id}/resumo?year=${season.next.year}` : '';
-    const previous = season.previous ? `/partida/${matchFacts.id}/resumo?year=${season.previous.year}` : '';
+    const next = season.next ? `/partida/${matchFacts.id}/escalacoes?year=${season.next.year}` : '';
+    const previous = season.previous ? `/partida/${matchFacts.id}/escalacoes?year=${season.previous.year}` : '';
 
-    const { query, route, push: pushRoute } = useRouter();
+    const { query, route, push: pushRoute, replace: replaceRoute } = useRouter();
     delete query.id;
+
+    useEffect(() => {
+        if (!matchFacts.details) {
+            replaceRoute({
+                pathname: `/partida/${matchFacts.id}/resumo`,
+                query
+            });
+        }
+    }, []);
 
     const tabs = [
         {
@@ -41,11 +50,8 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
             identifier: 'summary',
             name: 'Resumo',
             active: route.includes('resumo')
-        }
-    ];
-
-    if (matchFacts.details) {
-        tabs.push({
+        },
+        {
             handler: () => {
                 pushRoute({
                     pathname: `/partida/${matchFacts.id}/escalacoes`,
@@ -55,8 +61,8 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
             identifier: 'lineup',
             name: 'Escalações',
             active: route.includes('escalacoes')
-        });
-    }
+        }
+    ];
 
     const onClose = () => {
         pushRoute({

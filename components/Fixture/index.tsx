@@ -80,6 +80,8 @@ export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate,
         const cleanedQuery = { ...query };
         delete cleanedQuery.id;
 
+        console.log(id);
+
         pushRoute({
             pathname: `/partida/${id}/resumo`,
             query: cleanedQuery
@@ -91,44 +93,56 @@ export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate,
         event.preventDefault();
     };
 
+    const WrappedContent = () => (
+        <FixtureWrapper active={active}>
+            <TournamentWrapper data-tip={tournament.name} data-type="dark" onClick={handleMobileTooltip}>
+                <img src={tournamentLogo} alt={tournament.name} />
+            </TournamentWrapper>
+            <ReactTooltip place="top" effect="solid" />
+
+            <span title={homeTeam.team.displayName || homeTeam.team.name}>
+                {homeTeam.team.displayName || homeTeam.team.name}
+            </span>
+            <TeamLogo src={homeLogo} />
+            <InfoWrapper>
+                {new Date() > estimatedEndTime && (
+                    <b>{homeTeam.score} - {awayTeam.score}</b>
+                )}
+
+                {new Date() <= estimatedEndTime && (
+                    <>
+                        <span>{formatDate(matchDateObj)}</span>
+                        <b>{formatHours(matchDateObj)}</b>
+                    </>
+                )}
+            </InfoWrapper>
+            <TeamLogo src={awayLogo} />
+            <span title={awayTeam.team.displayName || awayTeam.team.name}>
+                {awayTeam.team.displayName || awayTeam.team.name}
+            </span>
+
+            {
+                active && (
+                    <button style={{ cursor: 'pointer' }} onClick={() => handleDetails(id)}>
+                        <LaunchIcon />
+                    </button>
+                )
+            }
+        </FixtureWrapper>
+    );
+
+    if (active) {
+        return (
+            <div>
+                <WrappedContent />
+            </div>
+        );
+    }
+
     return (
         <Link href={href}>
-            <a disabled={active}>
-                <FixtureWrapper active={active}>
-                    <TournamentWrapper data-tip={tournament.name} data-type="dark" onClick={handleMobileTooltip}>
-                        <img src={tournamentLogo} alt={tournament.name} />
-                    </TournamentWrapper>
-                    <ReactTooltip place="top" effect="solid" />
-
-                    <span title={homeTeam.team.displayName || homeTeam.team.name}>
-                        {homeTeam.team.displayName || homeTeam.team.name}
-                    </span>
-                    <TeamLogo src={homeLogo} />
-                    <InfoWrapper>
-                        {new Date() > estimatedEndTime && (
-                            <b>{homeTeam.score} - {awayTeam.score}</b>
-                        )}
-
-                        {new Date() <= estimatedEndTime && (
-                            <>
-                                <span>{formatDate(matchDateObj)}</span>
-                                <b>{formatHours(matchDateObj)}</b>
-                            </>
-                        )}
-                    </InfoWrapper>
-                    <TeamLogo src={awayLogo} />
-                    <span title={awayTeam.team.displayName || awayTeam.team.name}>
-                        {awayTeam.team.displayName || awayTeam.team.name}
-                    </span>
-
-                    {
-                        active && (
-                            <button style={{ cursor: 'pointer' }} onClick={() => handleDetails(id)}>
-                                <LaunchIcon />
-                            </button>
-                        )
-                    }
-                </FixtureWrapper>
+            <a>
+                <WrappedContent />
             </a>
         </Link>
     );
