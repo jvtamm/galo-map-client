@@ -9,20 +9,23 @@ interface MatchEventsProps {
 }
 
 export const MatchEvents: React.FC<MatchEventsProps> = ({ events }) => {
-// export const MatchEvents: React.FC<MatchEventsProps> = () => {
     return (
         <EventsWrapper>
             {
-                events && events.map(({ type, details, timestamp, isAway }, index) => {
+                events && events.map(({ type, data, timestamp, isAway }, index) => {
                     const props = {
                         type,
-                        details
+                        details: data
                     };
 
                     return (
                         <EventItem key={index} isAway={isAway}>
                             <TimeWrapper>
-                                <span>{timestamp}&apos;</span>
+                                {
+                                    timestamp && (
+                                        <span>{timestamp}&apos;</span>
+                                    )
+                                }
                             </TimeWrapper>
                             <EventFactory {...props} />
                         </EventItem>

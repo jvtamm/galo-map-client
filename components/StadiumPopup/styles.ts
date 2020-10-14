@@ -22,6 +22,7 @@ export const Name = styled.h2`
 `;
 
 export const Fixture = styled.div`
+    cursor: pointer;
     display: grid;
     justify-items: center;
     align-items: center;

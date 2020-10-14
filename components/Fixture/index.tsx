@@ -80,8 +80,6 @@ export const Fixture: React.FC<FixtureProps> = ({ homeTeam, awayTeam, matchDate,
         const cleanedQuery = { ...query };
         delete cleanedQuery.id;
 
-        console.log(id);
-
         pushRoute({
             pathname: `/partida/${id}/resumo`,
             query: cleanedQuery

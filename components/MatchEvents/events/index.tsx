@@ -15,6 +15,7 @@ export interface EventProps {
     data: any;
 }
 
+// Add penalty and period events
 export const EventFactory = ({ type, details }: EventFactoryProps) => {
     switch (type) {
         case 'goal':
@@ -24,6 +25,7 @@ export const EventFactory = ({ type, details }: EventFactoryProps) => {
         case 'card':
             return <CardEvent data={details} />;
         default:
-            return <GoalEvent data={details} />;
+            // return <GoalEvent data={details} />;
+            return null;
     }
 };

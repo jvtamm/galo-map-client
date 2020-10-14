@@ -14,7 +14,7 @@ export type EventTypes = 'card' | 'goal' | 'substitution';
 
 export interface Event {
     type: EventTypes;
-    details: any;
+    data: any;
     isAway: boolean;
     timestamp?: number;
 };
@@ -27,9 +27,24 @@ export interface FixtureDetails {
 }
 
 interface IFixtureDetailsService {
-    loadDetails(fixtureId: string): Promise<FixtureDetails>;
+    // loadDetails(fixtureId: string): Promise<FixtureDetails>;
+    defineAwayFlag(details: FixtureDetails, homeTeamId: string, awayTeamId: string): FixtureDetails;
 }
 
-export class FixtureDetailsService {
+export class FixtureDetailsService implements IFixtureDetailsService {
     // private readonly _endpoint = 'fixture';
+    defineAwayFlag(details: FixtureDetails, awayTeamId: string): FixtureDetails {
+        const { events } = details;
+
+        details.events = events.map((event) => {
+            const { data } = event;
+            if (data && data.team) {
+                event.isAway = data.team.id === awayTeamId;
+            }
+
+            return event;
+        });
+
+        return details;
+    }
 }

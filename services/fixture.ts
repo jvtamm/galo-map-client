@@ -1,6 +1,6 @@
 import api from './api';
 
-import { FixtureDetails } from './fixture-details';
+import { FixtureDetails, FixtureDetailsService } from './fixture-details';
 
 export type FixtureStatus = 'NS' | 'FT';
 
@@ -60,6 +60,8 @@ interface IFixtureService {
 export class FixtureService implements IFixtureService {
     private readonly _endpoint = 'fixture';
 
+    private static readonly _fixtureDetailsService = new FixtureDetailsService();
+
     async query(params: Query): Promise<Fixture[]> {
         const queryParams = Object.entries(params).reduce((acc, [key, value], index) => {
             if (index !== 0) {
@@ -74,17 +76,7 @@ export class FixtureService implements IFixtureService {
         try {
             const { data } = await api.get(endpoint);
 
-            return data.fixtures.map((fixture) => ({
-                id: fixture.id,
-                tournament: fixture.tournament as Tournament,
-                round: fixture.round,
-                homeTeam: fixture.homeTeam,
-                awayTeam: fixture.awayTeam,
-                status: fixture.status,
-                ...fixture.matchDate && { matchDate: fixture.matchDate },
-                ...fixture.ground && { ground: fixture.ground },
-                ...fixture.referee && { referee: fixture.referee }
-            }));
+            return data.fixtures.map(FixtureService.formatFixture);
         } catch (e) {
             console.log(e);
             return [];
@@ -95,17 +87,7 @@ export class FixtureService implements IFixtureService {
         try {
             const { data: fixture } = await api.get(`${this._endpoint}/${id}`);
 
-            return {
-                id: fixture.id,
-                tournament: fixture.tournament as Tournament,
-                round: fixture.round,
-                homeTeam: fixture.homeTeam,
-                awayTeam: fixture.awayTeam,
-                status: fixture.status,
-                ...fixture.matchDate && { matchDate: fixture.matchDate },
-                ...fixture.ground && { ground: fixture.ground },
-                ...fixture.referee && { referee: fixture.referee }
-            };
+            return FixtureService.formatFixture(fixture);
         } catch (error) {
             console.log(error);
             return null;
@@ -138,5 +120,20 @@ export class FixtureService implements IFixtureService {
         }
 
         return Object.values(tournaments);
+    }
+
+    static formatFixture(fixture: any): Fixture {
+        return {
+            id: fixture.id,
+            tournament: fixture.tournament as Tournament,
+            round: fixture.round,
+            homeTeam: fixture.homeTeam,
+            awayTeam: fixture.awayTeam,
+            status: fixture.status,
+            ...fixture.matchDate && { matchDate: fixture.matchDate },
+            ...fixture.ground && { ground: fixture.ground },
+            ...fixture.referee && { referee: fixture.referee },
+            ...fixture.details && { details: this._fixtureDetailsService.defineAwayFlag(fixture.details, fixture.awayTeam.team.id) }
+        };
     }
 }

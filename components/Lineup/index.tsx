@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { GroupWrapper, SectionTitle, SectionSide, PlayerContainer } from './styles';
+
 interface Player {
     name: string;
     jersey: number;
@@ -18,27 +20,54 @@ export interface LineupProps {
 
 export const Lineup: React.FC<LineupProps> = ({ homePlayers, awayPlayers }: LineupProps) => {
     return (
-        <div style={{ display: 'flex', flex: 1 }} >
-            <div style={{ flex: 1, flexDirection: 'column' }}>
-                {
-                    homePlayers.lineup.map(({ name, jersey, id }) => (
-                        <div style={{ display: 'flex' }} key={id}>
-                            <b>{jersey}</b>
-                            <p>{name}</p>
-                        </div>
-                    ))
-                }
-            </div>
-            <div style={{ flex: 1, flexDirection: 'column' }}>
-                {
-                    awayPlayers.lineup.map(({ name, jersey, id }) => (
-                        <div style={{ display: 'flex' }} key={id}>
-                            <b>{jersey}</b>
-                            <p>{name}</p>
-                        </div>
-                    ))
-                }
-            </div>
-        </div>
+        <>
+            <GroupWrapper>
+                <SectionTitle>Titulares</SectionTitle>
+                <SectionSide>
+                    {
+                        homePlayers.lineup.map(({ name, jersey, id }) => (
+                            <PlayerContainer key={id}>
+                                <b>{jersey}</b>
+                                <p>{name}</p>
+                            </PlayerContainer>
+                        ))
+                    }
+                </SectionSide>
+                <SectionSide>
+                    {
+                        awayPlayers.lineup.map(({ name, jersey, id }) => (
+                            <PlayerContainer key={id}>
+                                <b>{jersey}</b>
+                                <p>{name}</p>
+                            </PlayerContainer>
+                        ))
+                    }
+                </SectionSide>
+            </GroupWrapper>
+
+            <GroupWrapper>
+                <SectionTitle>Reservas</SectionTitle>
+                <SectionSide>
+                    {
+                        homePlayers.bench.map(({ name, jersey, id }) => (
+                            <PlayerContainer key={id}>
+                                <b>{jersey}</b>
+                                <p>{name}</p>
+                            </PlayerContainer>
+                        ))
+                    }
+                </SectionSide>
+                <SectionSide>
+                    {
+                        awayPlayers.bench.map(({ name, jersey, id }) => (
+                            <PlayerContainer key={id}>
+                                <b>{jersey}</b>
+                                <p>{name}</p>
+                            </PlayerContainer>
+                        ))
+                    }
+                </SectionSide>
+            </GroupWrapper>
+        </>
     );
 };

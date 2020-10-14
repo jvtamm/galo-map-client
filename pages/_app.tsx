@@ -7,7 +7,7 @@ import React from 'react';
 import GlobalStyle from '@styles/GlobalStyles';
 
 // Router.events.on('routeChangeStart', () => NProgress.start());
-// Router.events.on('routeChangeComplete', () => NProgress.done());
+// Router.events.on('routeChangeComplete', () => NProgress.done());s
 // Router.events.on('routeChangeError', () => NProgress.done());
 
 export default class MyApp extends App {
@@ -17,6 +17,7 @@ export default class MyApp extends App {
             <>
                 <Component {...pageProps} />
                 <GlobalStyle />
+                <div id='modal-root' />
             </>
         );
     }

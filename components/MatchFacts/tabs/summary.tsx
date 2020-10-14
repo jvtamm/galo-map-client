@@ -12,7 +12,7 @@ export const MatchSummary: React.FC<Fixture> = ({ details, matchDate, tournament
 
     const info = {
         matchDate: matchDateObj,
-        ground: ground.name,
+        ground: ground.nickname || ground.name,
         tournament,
         referee
     };

@@ -1,13 +1,16 @@
 import dynamic from 'next/dynamic';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import MapProvider, { MapContextData } from '@contexts/map';
 import api from '@services/api';
+import { Fixture, FixtureService } from '@services/fixture';
+import { FixtureProps, StadiumPopup } from '@components/StadiumPopup';
 import { Layout } from '@components/Layout';
 import { Timeline, TimelineItemProps } from '@components/Timeline';
 import { TimelineWrapper, DistanceWrapper } from '@styles/pages/Estatisticas';
-import MapProvider, { MapContextData } from '@contexts/map';
 import { generateMarker } from '@components/Map/Marker';
-import { FixtureProps, StadiumPopup } from '@components/StadiumPopup';
+import { useModal } from '@hooks/useModal';
+import { MatchFacts } from '@components/MatchFacts';
 
 const Map = dynamic(() => import('@components/Map'), {
     ssr: false
@@ -18,7 +21,7 @@ const SnakeAnim = dynamic(() => import('components/Map/SnakeAnim'), {
 });
 
 interface MapStatsProps {
-    fixtures: Array<any>;
+    fixtures: Fixture[];
     groundFixtures: any;
 }
 
@@ -33,8 +36,22 @@ const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapSt
     const [timelineItems, setTimelineItems] = useState<TimelineItemProps[]>([]);
     const [groundFixtureMap, setGroundFixtureMap] = useState<FixtureProps[]>([]);
     const [grounds, setGrounds] = useState<Array<any>>([]);
+    const [selectedFixture, setSelectedFixture] = useState<Fixture>();
+    const [activeTab, setActiveTabs] = useState<string>('summary');
+
+    const { show, RenderModal } = useModal();
 
     const mapProviderRef = useRef<MapContextData>(null);
+
+    const onPopupItemClick = useCallback(async(id: string) => {
+        const fixtureService = new FixtureService();
+        const fixture = await fixtureService.getById(id);
+
+        if (fixture) {
+            setSelectedFixture(fixture);
+            show();
+        }
+    }, []);
 
     useEffect(() => {
         const { defineAdditionalPoints } = mapProviderRef.current;
@@ -46,7 +63,7 @@ const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapSt
             const hash = `${coords.latitude}${coords.longitude}`;
             const marker = {
                 ...markerOptions,
-                popup: <StadiumPopup fixtures={groundFixtureMap[hash]} />
+                popup: <StadiumPopup fixtures={groundFixtureMap[hash]} onItemClick={onPopupItemClick} />
             };
 
             return {
@@ -69,6 +86,7 @@ const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapSt
         const groundMap = { ...groundFixtures };
         Object.keys(groundMap).forEach((key) => {
             groundMap[key] = groundMap[key].map((match) => ({
+                id: match.id,
                 ground: (match.ground.nickname || match.ground.name) as string,
                 homeTeam: {
                     name: match.homeTeam.team.displayName as string,
@@ -104,7 +122,7 @@ const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapSt
 
             p.marker = {
                 ...markerOptions,
-                popup: <StadiumPopup fixtures={groundFixtureMap[hash]} />
+                popup: <StadiumPopup fixtures={groundFixtureMap[hash]} onItemClick={onPopupItemClick} />
             };
 
             return p;
@@ -131,7 +149,7 @@ const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapSt
 
                 const marker = {
                     ...markerOptions,
-                    popup: <StadiumPopup fixtures={groundFixtureMap[hash]} />
+                    popup: <StadiumPopup fixtures={groundFixtureMap[hash]} onItemClick={onPopupItemClick} />
                 };
 
                 return {
@@ -152,39 +170,61 @@ const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapSt
         }
     };
 
-    return (
-        <Layout>
-            <div>
-                <div style={{ width: '100%', height: '100%' }}>
-                    <MapProvider ref={mapProviderRef}>
-                        <Map showPolylines={true}>
-                            <SnakeAnim
-                                onAnimationStart={onAnimationStart}
-                                onAnimationEnd={onAnimationEnd} />
-                            <TimelineWrapper>
-                                <Timeline
-                                    selectable={!animating}
-                                    items={timelineItems}
-                                    onSelectionChange={onSelectionChange}
-                                    initialSelectedIndex={timelineItems.length > 1 ? 1 : 0} />
-                            </TimelineWrapper>
+    const tabs = [
+        {
+            handler: () => setActiveTabs('summary'),
+            identifier: 'summary',
+            name: 'Resumo',
+            active: activeTab === 'summary'
+        }
+    ];
 
-                            {
-                                mapProviderRef && mapProviderRef.current && (
-                                    <DistanceWrapper>
-                                        {/* {console.log(mapProviderRef.current)} */}
-                                        <div>
-                                            { Math.round(mapProviderRef.current.distance).toLocaleString('pt')}
-                                            <span>km</span>
-                                        </div>
-                                    </DistanceWrapper>
-                                )
-                            }
-                        </Map>
-                    </MapProvider>
+    if (selectedFixture && selectedFixture.details) {
+        tabs.push({
+            handler: () => setActiveTabs('lineup'),
+            identifier: 'lineup',
+            name: 'Escalações',
+            active: activeTab === 'lineup'
+        });
+    }
+
+    return (
+        <>
+            <Layout>
+                <div>
+                    <div style={{ width: '100%', height: '100%' }}>
+                        <MapProvider ref={mapProviderRef}>
+                            <Map showPolylines={true}>
+                                <SnakeAnim
+                                    onAnimationStart={onAnimationStart}
+                                    onAnimationEnd={onAnimationEnd} />
+                                <TimelineWrapper>
+                                    <Timeline
+                                        selectable={!animating}
+                                        items={timelineItems}
+                                        onSelectionChange={onSelectionChange}
+                                        initialSelectedIndex={timelineItems.length > 1 ? 1 : 0} />
+                                </TimelineWrapper>
+
+                                {
+                                    mapProviderRef && mapProviderRef.current && (
+                                        <DistanceWrapper>
+                                            <div>
+                                                { Math.round(mapProviderRef.current.distance).toLocaleString('pt')}
+                                                <span>km</span>
+                                            </div>
+                                        </DistanceWrapper>
+                                    )
+                                }
+                            </Map>
+                        </MapProvider>
+                    </div>
                 </div>
-            </div>
-        </Layout>
+            </Layout>
+            <RenderModal>
+                <MatchFacts fixture={selectedFixture} tabs={tabs} />
+            </RenderModal>
+        </>
     );
 };
 
