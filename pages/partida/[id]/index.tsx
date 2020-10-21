@@ -11,6 +11,8 @@ import { SeasonService, SeasonRange } from '@services/season';
 import { Swiper } from '@components/SliderSelection';
 import MapProvider, { MapContextData } from '@contexts/map';
 
+import { MapWrapper, MapFixtureListWrapper } from '@styles/pages/Main';
+
 const Map = dynamic(() => import('@components/Map'), {
     ssr: false
 });
@@ -44,12 +46,7 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
     return (
         <Layout>
             <div>
-                <div style={{
-                    width: '45%',
-                    background: 'var(--white)',
-                    borderRight: '1px solid var(--light-effect)',
-                    height: '100%'
-                }}>
+                <MapFixtureListWrapper>
 
                     <div style={{ borderBottom: '1px solid var(--light-effect)', height: '60px' }}>
                         <Swiper value={swiperValue} next={next} previous={previous} />
@@ -64,12 +61,12 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
                         </div>
                     </FilterProvider>
 
-                </div>
-                <div style={{ width: '55%', height: '100%' }}>
+                </MapFixtureListWrapper>
+                <MapWrapper>
                     <MapProvider ref={mapProviderRef}>
                         <Map />
                     </MapProvider>
-                </div>
+                </MapWrapper>
             </div>
         </Layout>
     );

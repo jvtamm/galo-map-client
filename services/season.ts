@@ -14,6 +14,7 @@ export interface SeasonRange {
 
 interface ISeasonService {
     getByYear(year: number, range?: number): Promise<SeasonRange>
+    getAllSeasons(): Promise<Season[]>;
 }
 
 export class SeasonService implements ISeasonService {
@@ -35,6 +36,19 @@ export class SeasonService implements ISeasonService {
         } catch (e) {
             console.log(e);
             return { current: null };
+        }
+    }
+
+    async getAllSeasons():Promise<Season[]> {
+        const endpoint = `${this._endpoint}/list`;
+
+        try {
+            const { data } = await api.get(endpoint);
+
+            return data.seasons;
+        } catch (e) {
+            console.log(e);
+            return [];
         }
     }
 }

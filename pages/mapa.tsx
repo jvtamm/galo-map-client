@@ -1,5 +1,7 @@
 import dynamic from 'next/dynamic';
+import Router from 'next/router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Select from 'react-select';
 
 import MapProvider, { MapContextData } from '@contexts/map';
 import api from '@services/api';
@@ -7,10 +9,11 @@ import { Fixture, FixtureService } from '@services/fixture';
 import { FixtureProps, StadiumPopup } from '@components/StadiumPopup';
 import { Layout } from '@components/Layout';
 import { Timeline, TimelineItemProps } from '@components/Timeline';
-import { TimelineWrapper, DistanceWrapper } from '@styles/pages/Estatisticas';
+import { TimelineWrapper, DistanceWrapper } from '@styles/pages/Mapa';
 import { generateMarker } from '@components/Map/Marker';
 import { useModal } from '@hooks/useModal';
 import { MatchFacts } from '@components/MatchFacts';
+import { SeasonService, Season } from '@services/season';
 
 const Map = dynamic(() => import('@components/Map'), {
     ssr: false
@@ -23,6 +26,8 @@ const SnakeAnim = dynamic(() => import('components/Map/SnakeAnim'), {
 interface MapStatsProps {
     fixtures: Fixture[];
     groundFixtures: any;
+    seasons: Season[];
+    currentSeason: Season;
 }
 
 const markerOptions = {
@@ -31,7 +36,7 @@ const markerOptions = {
     breakpoint: 4
 };
 
-const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapStatsProps) => {
+const Statistics: React.FC<MapStatsProps> = ({ currentSeason, seasons, fixtures, groundFixtures }: MapStatsProps) => {
     const [animating, setAnimating] = useState(false);
     const [timelineItems, setTimelineItems] = useState<TimelineItemProps[]>([]);
     const [groundFixtureMap, setGroundFixtureMap] = useState<FixtureProps[]>([]);
@@ -54,7 +59,8 @@ const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapSt
     }, []);
 
     useEffect(() => {
-        const { defineAdditionalPoints } = mapProviderRef.current;
+        const { defineAdditionalPoints, definePoints } = mapProviderRef.current;
+        definePoints([]);
 
         const groundsList = fixtures.map(({ ground }) => ground.coordinates);
         setGrounds(groundsList);
@@ -100,7 +106,7 @@ const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapSt
         });
 
         setGroundFixtureMap(groundMap);
-    }, []);
+    }, [fixtures, groundFixtures]);
 
     const onAnimationEnd = () => {
         const {
@@ -193,8 +199,16 @@ const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapSt
             <Layout>
                 <div>
                     <div style={{ width: '100%', height: '100%' }}>
+                        <div >
+                            <Select
+                                styles={{ container: styles => ({ ...styles, zIndex: 100000 }) }}
+                                defaultValue={{ label: currentSeason.label, value: currentSeason.year }}
+                                onChange={(value) => { Router.push(`/mapa?year=${value.value}`); }}
+                                options={seasons.map(({ label, year }) => ({ label, value: year }))}
+                            />
+                        </div>
                         <MapProvider ref={mapProviderRef}>
-                            <Map showPolylines={true}>
+                            <Map showPolylines={true} style={{ height: 'calc(100% - 40px)' }}>
                                 <SnakeAnim
                                     onAnimationStart={onAnimationStart}
                                     onAnimationEnd={onAnimationEnd} />
@@ -230,6 +244,10 @@ const Statistics: React.FC<MapStatsProps> = ({ fixtures, groundFixtures }: MapSt
 
 export async function getServerSideProps(context) {
     const year = context.query.year || (new Date()).getFullYear();
+    console.log(year);
+
+    const seasonService = new SeasonService();
+    const seasons = await seasonService.getAllSeasons();
 
     const { data } = await api.get(`/fixture?year=${year}`);
 
@@ -248,7 +266,9 @@ export async function getServerSideProps(context) {
 
     const props = {
         fixtures: data.fixtures,
-        groundFixtures: grounds
+        groundFixtures: grounds,
+        currentSeason: seasons.find(({ year: seasonYear }) => seasonYear === parseInt(year)),
+        seasons: seasons.sort((a, b) => b.year - a.year)
         // curent: nextFixture || data.fixtures[0]
     };
 

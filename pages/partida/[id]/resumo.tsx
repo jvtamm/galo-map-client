@@ -1,4 +1,5 @@
 import React from 'react';
+import { useRouter } from 'next/router';
 
 import { ChipFilter } from '@components/ChipFilter';
 import { FilterProvider } from '@contexts/filter';
@@ -9,7 +10,7 @@ import { SeasonService, SeasonRange } from '@services/season';
 import { Swiper } from '@components/SliderSelection';
 import { Fixture, FixtureService } from '@services/fixture';
 import { MatchFacts } from '@components/MatchFacts';
-import { useRouter } from 'next/router';
+import { DetailsWrapper, DetailsFixtureListWrapper } from '@styles/pages/Main';
 
 interface MatchesProps {
     season: SeasonRange;
@@ -68,12 +69,7 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
     return (
         <Layout>
             <div>
-                <div style={{
-                    width: '45%',
-                    background: 'var(--white)',
-                    borderRight: '1px solid var(--light-effect)',
-                    height: '100%'
-                }}>
+                <DetailsFixtureListWrapper>
 
                     <div style={{ borderBottom: '1px solid var(--light-effect)', height: '60px' }}>
                         <Swiper value={swiperValue} next={next} previous={previous} />
@@ -88,10 +84,10 @@ const Matches = ({ season, filters, fixtures, matchFacts }: MatchesProps) => {
                         </div>
                     </FilterProvider>
 
-                </div>
-                <div style={{ width: '55%', height: '100%' }}>
+                </DetailsFixtureListWrapper>
+                <DetailsWrapper>
                     <MatchFacts fixture={matchFacts} tabs={tabs} onClose={onClose} />
-                </div>
+                </DetailsWrapper>
             </div>
         </Layout>
     );

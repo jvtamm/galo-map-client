@@ -22,6 +22,11 @@ interface TimelineProps {
 export const Timeline: React.FC<TimelineProps> = ({ items, initialSelectedIndex, selectable, onSelectionChange }) => {
     const [selectedIndex, setSelectedIndex] = React.useState(initialSelectedIndex);
 
+    useEffect(() => {
+        const index = items.length > 1 ? 1 : 0;
+        setSelectedIndex(index);
+    }, [items]);
+
     const [baseMargin, setBaseMargin] = React.useState<number>();
     const timelineRef = useRef(null);
 

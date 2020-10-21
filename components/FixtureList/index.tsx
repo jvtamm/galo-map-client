@@ -14,11 +14,13 @@ export const FixtureList: React.FC<FixtureListProps> = ({ fixtures, initialSelec
 
     const filteredFixtures = filters.length === 0 ? fixtures : fixtures.filter(({ tournament }) => includes(tournament.id));
 
+    const TABLET_WIDTH = 768;
+
     return (
         <>
             {
                 filteredFixtures.map((fixture) => {
-                    const anchor = `/partida/${fixture.id}`;
+                    const anchor = window.innerWidth > TABLET_WIDTH ? `/partida/${fixture.id}` : `/partida/${fixture.id}/resumo`;
                     const redirect = {
                         url: anchor,
                         keepParams: true

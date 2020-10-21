@@ -1,7 +1,7 @@
 import React from 'react';
 import MenuBar, { MenuItem } from '@components/MenuBar';
 
-import { Container, Menu, Main, Map, BarChart } from './styles';
+import { Container, Menu, Main, Map, List } from './styles';
 
 interface LayoutProps {
     children: React.ReactNode
@@ -9,14 +9,14 @@ interface LayoutProps {
 
 const menuItems: MenuItem[] = [
     {
-        name: 'Mapa',
+        name: 'Jogos',
         href: '/',
-        Icon: Map
+        Icon: List
     },
     {
-        name: 'Estatísticas',
-        href: '/estatisticas',
-        Icon: BarChart
+        name: 'Mapa',
+        href: '/mapa',
+        Icon: Map
     }
 ];
 

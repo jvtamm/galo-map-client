@@ -22,7 +22,7 @@ export const TimelineWrapper = styled.div`
     overflow: scroll;
 
     @media(max-width: 375px) {
-        bottom: 0;
+        bottom: 30px;
     }
 `;
 

@@ -35,6 +35,7 @@ interface MapProps {
     showPolylines?: boolean;
     // additionalPoints?: Point[];
     children?: React.ReactNode;
+    style?: any;
 }
 
 const Map: React.FC<MapProps> = ({ showPolylines, children, ...rest }: MapProps) => {

@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export { Map, BarChart } from '@styles/Icons';
+export { Map, List } from '@styles/Icons';
 
 export const Container = styled.div`
     /* display: grid;

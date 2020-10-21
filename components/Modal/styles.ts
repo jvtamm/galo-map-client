@@ -13,6 +13,10 @@ export const Wrapper = styled.div`
     width: 100%;
     height: 100%;
     /* background-color: rgba(0,0,0,0.4); */
+
+    @media(max-width: 375px) {
+        padding-top: 0px;
+    }
 `;
 
 export const Backdrop = styled.div`
@@ -33,11 +37,19 @@ export const Box = styled.div`
     width: 800px;
     height: 500px;
     overflow: hidden;
+    z-index: 2;
+
+    max-width: 90%;
 
     & > section {
         padding: 0;
     }
-    z-index: 2;
+
+    @media(max-width: 375px) {
+        max-width: 100%;
+        width: 100%;
+        height: 100%;
+    }
 `;
 
 export const Content = styled.div`
