@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Fixture } from '@components/Fixture';
 import { useFilters } from '@contexts/filter';
+import { useWindowSize } from '@hooks/useWindowSize';
 
 interface FixtureListProps {
     fixtures: Array<any>;
@@ -11,6 +12,7 @@ interface FixtureListProps {
 
 export const FixtureList: React.FC<FixtureListProps> = ({ fixtures, initialSelected }: FixtureListProps) => {
     const { filters, includes } = useFilters();
+    const { width } = useWindowSize();
 
     const filteredFixtures = filters.length === 0 ? fixtures : fixtures.filter(({ tournament }) => includes(tournament.id));
 
@@ -20,7 +22,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({ fixtures, initialSelec
         <>
             {
                 filteredFixtures.map((fixture) => {
-                    const anchor = window.innerWidth > TABLET_WIDTH ? `/partida/${fixture.id}` : `/partida/${fixture.id}/resumo`;
+                    const anchor = width > TABLET_WIDTH ? `/partida/${fixture.id}` : `/partida/${fixture.id}/resumo`;
                     const redirect = {
                         url: anchor,
                         keepParams: true
